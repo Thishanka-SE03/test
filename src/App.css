@@ -1,6 +1,6 @@
 /* App.css */
 .App {
-  min-height: 94vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -29,3 +29,4 @@ body {
 * {
   box-sizing: border-box;
 }
+
