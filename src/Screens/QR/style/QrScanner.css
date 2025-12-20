@@ -1,0 +1,272 @@
+.scanner-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.scanner-wrapper {
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  min-height: 400px;
+  position: relative;
+}
+
+.scanner-active {
+  height: 100%;
+  position: relative;
+}
+
+.scanner-placeholder {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #2d3748;
+}
+
+.placeholder-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.placeholder-text {
+  color: #a0aec0;
+  font-size: 18px;
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.scan-frame {
+  width: 250px;
+  height: 250px;
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+}
+
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: #00ff00;
+  border-style: solid;
+}
+
+.corner.top-left {
+  top: -2px;
+  left: -2px;
+  border-width: 4px 0 0 4px;
+  border-radius: 12px 0 0 0;
+}
+
+.corner.top-right {
+  top: -2px;
+  right: -2px;
+  border-width: 4px 4px 0 0;
+  border-radius: 0 12px 0 0;
+}
+
+.corner.bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 4px 4px;
+  border-radius: 0 0 0 12px;
+}
+
+.corner.bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 4px 4px 0;
+  border-radius: 0 0 12px 0;
+}
+
+.scan-guide {
+  color: white;
+  margin-top: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.scanner-controls {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.control-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.control-btn.stop {
+  background: #e53e3e;
+  color: white;
+}
+
+.control-btn.switch {
+  background: #4a5568;
+  color: white;
+}
+
+.control-btn:hover {
+  opacity: 0.9;
+}
+
+.error-message {
+  background: #fed7d7;
+  color: #9b2c2c;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.permission-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.primary-btn, .secondary-btn {
+  padding: 14px 28px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary-btn {
+  background: #3182ce;
+  color: white;
+}
+
+.secondary-btn {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.result-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 12px;
+}
+
+.result-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #e2e8f0;
+}
+
+.result-text {
+  word-break: break-all;
+  font-family: monospace;
+  margin-bottom: 20px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  text-align: center;
+}
+
+.action-btn.copy {
+  background: #38a169;
+  color: white;
+}
+
+.action-btn.link {
+  background: #3182ce;
+  color: white;
+}
+
+.instructions {
+  margin-top: 30px;
+  padding: 20px;
+  background: #ebf8ff;
+  border-radius: 12px;
+}
+
+.instructions ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin: 5px 0;
+}
+
+.note {
+  margin-top: 15px;
+  padding: 10px;
+  background: #bee3f8;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.camera-preview {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.camera-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
