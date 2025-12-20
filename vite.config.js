@@ -25,7 +25,7 @@ export default defineConfig({
         short_name: 'EcoSphere',
         start_url: '/',
         scope: '/',                 // 🔥 REQUIRED
-        display: 'standalone',      // 🔥 CORRECT
+        display: 'stanalone',      // 🔥 CORRECT
         background_color: '#000000',
         theme_color: '#000000',
         orientation: 'portrait',
@@ -58,12 +58,10 @@ export default defineConfig({
     },
   },
 
-  server: {
+  /*server: {
     https: true,
     host: true,
     port: 2000,
     strictPort: true,
-  },
+  },*/
 });
-
-
