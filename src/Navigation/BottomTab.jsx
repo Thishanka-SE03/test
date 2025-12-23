@@ -13,13 +13,13 @@ import {
   MessageCircle as MessageCircleFilled,
   User as UserFilled,
   QrCode as QrCodeFilled,
-} from "lucide-react";
+} from "lucide-react-native";
 import { moderateScale } from "react-native-size-matters";
 
 // Screens
 import HomeScreen from "../Screens/Home/Home";
 import Redeem from "../Screens/Redeem/Redeem";
-import Chatbot from "../Screens/Chatbot";
+import Report from "../Screens/Report/Report";
 import Profile from "../Screens/Profile/Profile";
 import QR from "../Screens/QR/qr";
 
@@ -116,12 +116,12 @@ const BottomTab = () => {
         }}
       />
 
-      {/* Chatbot */}
+      {/* Report */}
       <Tab.Screen
-        name="Chatbot"
-        component={Chatbot}
+        name="Report"
+        component={Report}
         options={{
-          tabBarLabel: "Chatbot",
+          tabBarLabel: "Report",
           tabBarIcon: ({ focused }) =>
             focused ? (
               <MessageCircleFilled
@@ -138,7 +138,9 @@ const BottomTab = () => {
               />
             ),
         }}
-      />
+        />
+
+
       {/* Profile */}
       <Tab.Screen
         name="Profile"

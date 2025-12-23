@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./style/LoginPage.module.css";
 import logo from "../../assets/images/logo.png";
 import { image } from "framer-motion/client";
+import { citizenLogin } from "../../services/authService";
+import { sendPasswordReset } from "../../services/authService";
 
 // images for background shuffle
 import bg1 from "../Images/Caro1.jpg";
@@ -15,6 +18,16 @@ import bg5 from "../Images/Caro5.jpg";
 const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
 
 const LoginPage = () => {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user]);
+  // ✅ ADD THIS
+  const [isLoading, setIsLoading] = useState(false);
+
   const [index, setIndex] = useState(0);
   const [formData, setFormData] = useState({
     email: "",
@@ -87,50 +100,48 @@ const LoginPage = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
     try {
-      // Simulate API call - replace with actual authentication
-      console.log("Login attempt with:", formData);
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, accept any valid email format
-      // In real app, you would check credentials against your backend
-      // Example: const response = await loginAPI(formData.email, formData.password);
-      
-      // If successful, navigate to dashboard
+      const userProfile = await citizenLogin(formData.email, formData.password);
+
+      console.log("Logged in citizen:", userProfile);
+
+      // Optional: store user locally (temporary)
+      localStorage.setItem("user", JSON.stringify(userProfile));
+
       navigate("/dashboard");
-      
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Login failed:", error.message);
       setErrors((prev) => ({
         ...prev,
-        general: "Invalid credentials. Please try again.",
+        general: error.message || "Invalid credentials",
       }));
     } finally {
       setIsSubmitting(false);
     }
   };
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Please enter your email to reset password",
+      }));
+      return;
+    }
 
-  // Demo login handler (optional - for testing)
-  const handleDemoLogin = () => {
-    setFormData({
-      email: "demo@example.com",
-      password: "demo123",
-    });
-    // Clear errors when using demo
-    setErrors({
-      email: "",
-      password: "",
-      general: "",
-    });
+    try {
+      setIsLoading(true); // 🔥 start animation
+      await sendPasswordReset(formData.email);
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setIsLoading(false); // 🔥 stop animation
+    }
   };
 
   return (
@@ -168,12 +179,10 @@ const LoginPage = () => {
 
         {/* Display general error */}
         {errors.general && (
-          <div className={styles.errorMessage}>
-            {errors.general}
-          </div>
+          <div className={styles.errorMessage}>{errors.general}</div>
         )}
 
-       {/* Login Form Section */}
+        {/* Login Form Section */}
         <form id="loginForm" onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
             <input
@@ -183,7 +192,9 @@ const LoginPage = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+              className={`${styles.input} ${
+                errors.email ? styles.inputError : ""
+              }`}
             />
             {errors.email && (
               <span className={styles.errorText}>{errors.email}</span>
@@ -198,29 +209,36 @@ const LoginPage = () => {
               value={formData.password}
               onChange={handleInputChange}
               required
-              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+              className={`${styles.input} ${
+                errors.password ? styles.inputError : ""
+              }`}
             />
             {errors.password && (
               <span className={styles.errorText}>{errors.password}</span>
             )}
           </div>
 
-          <div className={styles.formLinks}>
-            <a href="#" className={styles.forgotPassword}>
-              Forgot Password?
-            </a>
-            <button 
-              type="button" 
-              onClick={handleDemoLogin}
-              className={styles.demoLink}
-            >
-              Use Demo Account
-            </button>
-          </div>
-          
-          <button 
-            type="submit" 
-            className={`${styles.btnSecondary} ${isSubmitting ? styles.btnDisabled : ''}`}
+          <button
+            type="button"
+            className={styles.forgotPassword}
+            onClick={handleForgotPassword}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className={styles.loadingWrapper}>
+                <span className={styles.spinner}></span>
+                Sending reset email...
+              </span>
+            ) : (
+              "Forgot Password?"
+            )}
+          </button>
+
+          <button
+            type="submit"
+            className={`${styles.btnSecondary} ${
+              isSubmitting ? styles.btnDisabled : ""
+            }`}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Logging in..." : "Log In"}

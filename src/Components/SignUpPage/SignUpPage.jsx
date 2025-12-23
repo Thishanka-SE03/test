@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./style/SignupPage.module.css";
 import logo from "../../assets/images/logo.png";
+import { signUpCitizen } from "../../services/authService";
 
 // images for background shuffle
 import bg1 from "../Images/Caro1.jpg";
@@ -14,26 +15,28 @@ import bg5 from "../Images/Caro5.jpg";
 const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
 
 const SignupPage = () => {
+  const [showVerificationNotice, setShowVerificationNotice] = useState(false);
+
   const [index, setIndex] = useState(0);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    agreeToTerms: false
+    agreeToTerms: false,
   });
-  
+
   const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: "",
-    general: ""
+    general: "",
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState("");
   const navigate = useNavigate();
@@ -57,10 +60,10 @@ const SignupPage = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { id, value, type, checked } = e.target;
-    
+
     setFormData((prev) => ({
       ...prev,
-      [id]: type === 'checkbox' ? checked : value,
+      [id]: type === "checkbox" ? checked : value,
     }));
 
     // Clear error when user starts typing
@@ -72,12 +75,12 @@ const SignupPage = () => {
     }
 
     // Check password strength in real-time
-    if (id === 'password') {
+    if (id === "password") {
       checkPasswordStrength(value);
     }
 
     // Clear confirm password error if password changes
-    if (id === 'password' && errors.confirmPassword) {
+    if (id === "password" && errors.confirmPassword) {
       setErrors((prev) => ({
         ...prev,
         confirmPassword: "",
@@ -92,8 +95,10 @@ const SignupPage = () => {
       return;
     }
 
-    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-    const mediumRegex = /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
+    const strongRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+    const mediumRegex =
+      /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
 
     if (strongRegex.test(password)) {
       setPasswordStrength("strong");
@@ -105,15 +110,15 @@ const SignupPage = () => {
   };
 
   // Validation functions
-  const validateFirstName = (firstName) => {
-    if (!firstName.trim()) return "First name is required";
-    if (firstName.length < 2) return "First name must be at least 2 characters";
+  const validateFullName = (name) => {
+    if (!name.trim()) return "Full name is required";
+    if (name.length < 3) return "Full name must be at least 3 characters";
     return "";
   };
 
-  const validateLastName = (lastName) => {
-    if (!lastName.trim()) return "Last name is required";
-    if (lastName.length < 2) return "Last name must be at least 2 characters";
+  const validateUsername = (username) => {
+    if (!username.trim()) return "Username is required";
+    if (username.length < 3) return "Username must be at least 3 characters";
     return "";
   };
 
@@ -144,57 +149,41 @@ const SignupPage = () => {
   // Form validation
   const validateForm = () => {
     const newErrors = {
-      firstName: validateFirstName(formData.firstName),
-      lastName: validateLastName(formData.lastName),
+      fullName: validateFullName(formData.fullName),
+      username: validateUsername(formData.username),
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
-      confirmPassword: validateConfirmPassword(formData.confirmPassword, formData.password),
+      confirmPassword: validateConfirmPassword(
+        formData.confirmPassword,
+        formData.password
+      ),
       agreeToTerms: validateTerms(formData.agreeToTerms),
     };
 
     setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error !== "");
+    return !Object.values(newErrors).some((err) => err !== "");
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
     try {
-      // Simulate API call for signup
-      console.log("Signup attempt with:", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+      await signUpCitizen({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        username: formData.username,
+        fullname: formData.fullName,
       });
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In real app, you would:
-      // const response = await signupAPI(formData);
-      // if (response.success) navigate("/login");
-      
-      // For demo, navigate to login page
-      navigate("/login", { 
-        state: { 
-          message: "Account created successfully! Please log in.",
-          email: formData.email 
-        } 
-      });
-      
+
+      setShowVerificationNotice(true);
     } catch (error) {
-      console.error("Signup failed:", error);
       setErrors((prev) => ({
         ...prev,
-        general: error.message || "Signup failed. Please try again.",
+        general: error.message || "Signup failed",
       }));
     } finally {
       setIsSubmitting(false);
@@ -203,24 +192,53 @@ const SignupPage = () => {
 
   // Get password strength class
   const getPasswordStrengthClass = () => {
-    switch(passwordStrength) {
-      case "weak": return styles.passwordWeak;
-      case "medium": return styles.passwordMedium;
-      case "strong": return styles.passwordStrong;
-      default: return "";
+    switch (passwordStrength) {
+      case "weak":
+        return styles.passwordWeak;
+      case "medium":
+        return styles.passwordMedium;
+      case "strong":
+        return styles.passwordStrong;
+      default:
+        return "";
     }
   };
 
   // Get password strength text
   const getPasswordStrengthText = () => {
-    switch(passwordStrength) {
-      case "weak": return "Weak password";
-      case "medium": return "Medium strength";
-      case "strong": return "Strong password";
-      default: return "";
+    switch (passwordStrength) {
+      case "weak":
+        return "Weak password";
+      case "medium":
+        return "Medium strength";
+      case "strong":
+        return "Strong password";
+      default:
+        return "";
     }
   };
+  // 🔐 Email verification screen
+  if (showVerificationNotice) {
+    return (
+      <main className={styles.landingPage}>
+        <div className={styles.overlay} />
 
+        <section className={styles.content}>
+          <h2 className={styles.heroTitle}>Check your email 📬</h2>
+
+          <p className={styles.heroSubtitle}>
+            We’ve sent a confirmation link to <strong>{formData.email}</strong>.
+            <br />
+            Please verify your account before logging in.
+          </p>
+
+          <Link to="/login" className={styles.loginLink}>
+            Back to Login
+          </Link>
+        </section>
+      </main>
+    );
+  }
   return (
     <main className={styles.landingPage}>
       {/* 🔄 Image Shuffle Background */}
@@ -248,7 +266,7 @@ const SignupPage = () => {
             <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
           </Link>
         </header>
-        
+
         {/* Welcome Section */}
         <div className={styles.welcomeSection}>
           <h2 className={styles.heroTitle}>Join EcoSphere</h2>
@@ -259,44 +277,27 @@ const SignupPage = () => {
 
         {/* Display general error */}
         {errors.general && (
-          <div className={styles.errorMessage}>
-            {errors.general}
-          </div>
+          <div className={styles.errorMessage}>{errors.general}</div>
         )}
 
         {/* Signup Form */}
         <form id="signupForm" onSubmit={handleSubmit}>
           {/* Name fields side by side */}
-          <div className={styles.nameFields}>
-            <div className={styles.inputGroup}>
-              <input
-                type="text"
-                id="firstName"
-                placeholder="First name"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-                className={`${styles.input} ${errors.firstName ? styles.inputError : ''}`}
-              />
-              {errors.firstName && (
-                <span className={styles.errorText}>{errors.firstName}</span>
-              )}
-            </div>
 
-            <div className={styles.inputGroup}>
-              <input
-                type="text"
-                id="lastName"
-                placeholder="Last name"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-                className={`${styles.input} ${errors.lastName ? styles.inputError : ''}`}
-              />
-              {errors.lastName && (
-                <span className={styles.errorText}>{errors.lastName}</span>
-              )}
-            </div>
+          <div className={styles.inputGroup}>
+            <input
+              type="text"
+              id="fullName"
+              placeholder="Full Name"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className={`${styles.input} ${
+                errors.fullName ? styles.inputError : ""
+              }`}
+            />
+            {errors.fullName && (
+              <span className={styles.errorText}>{errors.fullName}</span>
+            )}
           </div>
 
           {/* Email field */}
@@ -308,10 +309,29 @@ const SignupPage = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+              className={`${styles.input} ${
+                errors.email ? styles.inputError : ""
+              }`}
             />
             {errors.email && (
               <span className={styles.errorText}>{errors.email}</span>
+            )}
+          </div>
+          {/* username field */}
+          <div className={styles.inputGroup}>
+            <input
+              type="text"
+              id="username"
+              placeholder="Enter your username"
+              value={formData.username}
+              onChange={handleInputChange}
+              required
+              className={`${styles.input} ${
+                errors.username ? styles.inputError : ""
+              }`}
+            />
+            {errors.username && (
+              <span className={styles.errorText}>{errors.username}</span>
             )}
           </div>
 
@@ -324,10 +344,14 @@ const SignupPage = () => {
               value={formData.password}
               onChange={handleInputChange}
               required
-              className={`${styles.input} ${errors.password ? styles.inputError : ''} ${getPasswordStrengthClass()}`}
+              className={`${styles.input} ${
+                errors.password ? styles.inputError : ""
+              } ${getPasswordStrengthClass()}`}
             />
             {formData.password && (
-              <div className={`${styles.passwordStrength} ${styles[passwordStrength]}`}>
+              <div
+                className={`${styles.passwordStrength} ${styles[passwordStrength]}`}
+              >
                 <span>{getPasswordStrengthText()}</span>
                 <div className={styles.strengthBar}>
                   <div className={styles.strengthFill}></div>
@@ -348,7 +372,9 @@ const SignupPage = () => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               required
-              className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
+              className={`${styles.input} ${
+                errors.confirmPassword ? styles.inputError : ""
+              }`}
             />
             {errors.confirmPassword && (
               <span className={styles.errorText}>{errors.confirmPassword}</span>
@@ -366,18 +392,27 @@ const SignupPage = () => {
                 className={styles.checkboxInput}
               />
               <span className={styles.checkboxText}>
-                I agree to the <Link to="/terms" className={styles.termsLink}>Terms of Service</Link> and <Link to="/privacy" className={styles.termsLink}>Privacy Policy</Link>
+                I agree to the{" "}
+                <Link to="/terms" className={styles.termsLink}>
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className={styles.termsLink}>
+                  Privacy Policy
+                </Link>
               </span>
             </label>
             {errors.agreeToTerms && (
               <span className={styles.errorText}>{errors.agreeToTerms}</span>
             )}
           </div>
-          
+
           {/* Submit button */}
-          <button 
-            type="submit" 
-            className={`${styles.btnPrimary} ${isSubmitting ? styles.btnDisabled : ''}`}
+          <button
+            type="submit"
+            className={`${styles.btnPrimary} ${
+              isSubmitting ? styles.btnDisabled : ""
+            }`}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Creating Account..." : "Create Account"}

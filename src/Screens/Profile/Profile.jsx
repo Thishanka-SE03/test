@@ -20,7 +20,8 @@ import {
   Trophy,
 } from "lucide-react";
 import { styles } from "./styles/ProfileStyles";
-import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -32,12 +33,16 @@ const Profile = () => {
   const [tempEmail, setTempEmail] = useState(email);
   const [tempAddress, setTempAddress] = useState(address);
 
-  const navigation = useNavigation();
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    window.location.href = "/";
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
   };
 
   const handleSave = () => {

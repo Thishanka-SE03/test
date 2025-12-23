@@ -1,188 +1,174 @@
-import { StyleSheet } from 'react-native';
+import React from 'react';
 
-export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fdf6',
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
+const Styles = () => (
+  <style>{`
+    * { box-sizing: border-box; }
 
-  // Hero Section
-  hero: {
-    backgroundColor: '#0a5f38',
-    paddingVertical: 80,
-    paddingHorizontal: 20,
-  },
-  heroContent: {
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-  heroTitle: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 16,
-  },
-  heroSubtitle: {
-    fontSize: 20,
-    color: '#e0f2e9',
-    marginBottom: 32,
-    lineHeight: 30,
-  },
-  heroButtons: {
-    flexDirection: 'row',
-    gap: 16,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  primaryButton: {
-    backgroundColor: '#22c55e',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderColor: 'white',
-    borderWidth: 2,
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 50,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  secondaryButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #010a08;
+      color: #f0fdf4;
+      font-family: 'Inter', -apple-system, sans-serif;
+      /* Prevent horizontal shake, allow vertical scroll */
+      overflow-x: hidden; 
+      min-height: 100vh;
+    }
 
-  // Stats Section
-  statsSection: {
-    paddingVertical: 80,
-    backgroundColor: '#ecfdf5',
-  },
-  sectionWrapper: {
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    textAlign: 'center',
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#166534',
-    marginBottom: 48,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 40,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 56,
-    fontWeight: 'bold',
-    color: '#16a34a',
-  },
-  statLabel: {
-    fontSize: 18,
-    color: '#4b5563',
-  },
+    .page-container {
+      position: relative;
+      overflow: scroll;
+      overflow-x: hidden;
+    }
 
-  // Features Section
-  featuresSection: {
-    paddingVertical: 100,
-    backgroundColor: 'white',
-  },
-  sectionSubtitle: {
-    textAlign: 'center',
-    fontSize: 18,
-    color: '#6b7280',
-    marginBottom: 60,
-    maxWidth: 700,
-    marginHorizontal: 'auto',
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 40,
-  },
-  featureCard: {
-    flex: 1,
-    minWidth: 280,
-    backgroundColor: '#f0fdf4',
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-  iconCircle: {
-    backgroundColor: '#86efac',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  featureTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#166534',
-    marginBottom: 12,
-  },
-  featureDesc: {
-    color: '#4b5563',
-    fontSize: 16,
-  },
+    /* Molten Emerald Background */
+    .molten-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -1;
+      background: linear-gradient(135deg, #010a08 0%, #064e3b 100%);
+    }
+    
+    .molten-orb {
+      position: absolute;
+      width: 60vw; height: 60vw;
+      background: radial-gradient(circle, #059669 0%, transparent 70%);
+      filter: blur(100px);
+      opacity: 0.15;
+      animation: float 20s infinite alternate;
+    }
 
-  // Final CTA
-  ctaSection: {
-    backgroundColor: '#166534',
-    paddingVertical: 100,
-    paddingHorizontal: 20,
-  },
-  ctaContent: {
-    maxWidth: 800,
-    marginHorizontal: 'auto',
-    textAlign: 'center',
-  },
-  ctaTitle: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 20,
-  },
-  ctaSubtitle: {
-    fontSize: 20,
-    color: '#d1fae5',
-    marginBottom: 32,
-  },
-  ctaButton: {
-    backgroundColor: '#22c55e',
-    paddingHorizontal: 40,
-    paddingVertical: 18,
-    borderRadius: 50,
-    alignSelf: 'center',
-  },
-  ctaButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-});
+    @keyframes float {
+      from { transform: translate(-10%, -10%); }
+      to { transform: translate(20%, 20%); }
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* THE GRID FIX: No fixed height. Auto-layout. */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 350px 1fr 350px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 32px;
+      padding: 25px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tree Stage Container */
+    .canvas-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-holder {
+      width: 100%;
+      aspect-ratio: 4 / 3; /* Responsive aspect ratio */
+      min-height: 400px;
+      border-radius: 40px;
+      cursor: grab;
+      position: relative;
+    }
+
+    .points-pill {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #059669;
+      padding: 15px 30px;
+      border-radius: 30px;
+      text-align: center;
+      margin: 0 auto;
+      width: 380px;
+    }
+
+    .progress-track {
+      width: 350px;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+      margin-left: -12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #34d399;
+      box-shadow: 0 0 15px #34d399;
+    }
+
+    .item-btn {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 18px;
+      border-radius: 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: 0.3s;
+    }
+
+    .item-btn:hover {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: #34d399;
+      transform: translateY(-2px);
+    }
+
+    /* Mobile Responsive Logic */
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .canvas-section {
+        order: -1; /* Tree on top */
+      }
+    }
+
+    @media (max-width: 600px) {
+      .app-wrapper { padding: 10px; }
+      .canvas-holder { aspect-ratio: 1; min-height: 300px; }
+    }
+  `}</style>
+);
+
+export default Styles;

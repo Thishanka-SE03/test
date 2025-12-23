@@ -78,11 +78,7 @@
   gap: 1.5rem;
 }
 
-.nameFields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
+
 
 .inputGroup {
   display: flex;

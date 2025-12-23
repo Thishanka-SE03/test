@@ -4,11 +4,9 @@ import react from '@vitejs/plugin-react';
 import reactNativeWeb from 'vite-plugin-react-native-web';
 import mkcert from 'vite-plugin-mkcert';
 import { VitePWA } from 'vite-plugin-pwa';
-import tailwindcss from "@tailwindcss/vite";
-    
+
 export default defineConfig({
   plugins: [
-    tailwindcss(),
     react(),
     reactNativeWeb(),
     mkcert(),
@@ -25,7 +23,7 @@ export default defineConfig({
         short_name: 'EcoSphere',
         start_url: '/',
         scope: '/',                 // 🔥 REQUIRED
-        display: 'stanalone',      // 🔥 CORRECT
+        display: 'standalone',      // 🔥 CORRECT
         background_color: '#000000',
         theme_color: '#000000',
         orientation: 'portrait',
@@ -58,10 +56,10 @@ export default defineConfig({
     },
   },
 
-  /*server: {
+  server: {
     https: true,
     host: true,
     port: 2000,
     strictPort: true,
-  },*/
+  },
 });
