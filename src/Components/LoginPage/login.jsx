@@ -110,9 +110,6 @@ const LoginPage = () => {
 
       console.log("Logged in citizen:", userProfile);
 
-      // Optional: store user locally (temporary)
-      localStorage.setItem("user", JSON.stringify(userProfile));
-
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error.message);

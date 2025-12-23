@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -6,8 +6,8 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native-web";
 import {
   Camera,
@@ -22,109 +22,180 @@ import {
 import { styles } from "./styles/ProfileStyles";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { fetchCitizenAddress, updateUserProfile } from "./Service/profileUtils";
 
 const Profile = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [originalPhoto, setOriginalPhoto] = useState(null);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [tempUsername, setTempUsername] = useState(username);
-  const [tempEmail, setTempEmail] = useState(email);
-  const [tempAddress, setTempAddress] = useState(address);
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  const [tempUsername, setTempUsername] = useState("");
+  const [tempEmail, setTempEmail] = useState("");
+  const [tempAddress, setTempAddress] = useState("");
+  const [tempPhotoFile, setTempPhotoFile] = useState(null);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (error) {
-      Alert.alert("Error", "Failed to log out. Please try again.");
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
     }
+
+    const loadProfile = async () => {
+      try {
+        setLoading(true);
+
+        setUsername(user.username || "");
+        setEmail(user.email || "");
+        setProfilePhoto(user.userphotopath || null);
+        setOriginalPhoto(user.userphotopath || null);
+
+        const citizenAddr = await fetchCitizenAddress(user.id);
+        setAddress(citizenAddr);
+
+        setTempUsername(user.username || "");
+        setTempEmail(user.email || "");
+        setTempAddress(citizenAddr);
+      } catch {
+        window.alert("Failed to load profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user, navigate]);
+
+  const handlePhotoChange = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setTempPhotoFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfilePhoto(ev.target.result);
+      reader.readAsDataURL(file);
+    };
+    input.click();
   };
 
-  const handleSave = () => {
-    setUsername(tempUsername);
-    setEmail(tempEmail);
-    setAddress(tempAddress);
-    setIsEditing(false);
-    Alert.alert("Success", "Profile updated successfully!");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const newPhotoUrl = await updateUserProfile({
+        userId: user.id,
+        username: tempUsername,
+        email: tempEmail,
+        address: tempAddress,
+        photoFile: tempPhotoFile,
+        currentPhotoPath: originalPhoto,
+      });
+
+      setUsername(tempUsername);
+      setEmail(tempEmail);
+      setAddress(tempAddress);
+      setProfilePhoto(newPhotoUrl);
+      setOriginalPhoto(newPhotoUrl);
+      setTempPhotoFile(null);
+      setIsEditing(false);
+
+      window.alert("Profile updated successfully");
+    } catch (err) {
+      window.alert(err.message || "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setTempUsername(username);
     setTempEmail(email);
     setTempAddress(address);
+    setProfilePhoto(originalPhoto);
+    setTempPhotoFile(null);
     setIsEditing(false);
   };
 
-  const handlePhotoChange = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    // Remove capture to allow choosing camera OR gallery (best UX)
-
-    input.onchange = (e) => {
-      const file = e.target?.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setProfilePhoto(ev.target?.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-
-    // Trigger click on the hidden input
-    input.click();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch {
+      window.alert("Failed to log out");
+    }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#16a34a" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>My Profile</Text>
-          <Text style={styles.subtitle}>
-            Manage your account and view your impact
-          </Text>
+          <Text style={styles.subtitle}>Manage your account</Text>
         </View>
 
-        {/* Profile Photo */}
         <View style={styles.photoContainer}>
           <View style={styles.photoWrapper}>
             <Image
               source={{
-                uri:
-                  profilePhoto || "https://via.placeholder.com/120?text=User",
+                uri: profilePhoto || "https://via.placeholder.com/120",
               }}
               style={styles.profileImage}
             />
-            <TouchableOpacity
-              onPress={handlePhotoChange}
-              style={styles.cameraButton}
-            >
-              <Camera color="white" size={20} />
-            </TouchableOpacity>
+            {isEditing && (
+              <TouchableOpacity
+                onPress={handlePhotoChange}
+                style={styles.cameraButton}
+              >
+                <Camera color="white" size={20} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {/* Edit/Save Buttons */}
         <View style={styles.actionButtonsContainer}>
           {isEditing ? (
             <View style={styles.editActions}>
               <TouchableOpacity
                 onPress={handleCancel}
                 style={styles.cancelButton}
+                disabled={saving}
               >
                 <X color="white" size={18} />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-                <Check color="white" size={18} />
-                <Text style={styles.buttonText}>Save Changes</Text>
+
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.saveButton}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator size={18} color="white" />
+                ) : (
+                  <Check color="white" size={18} />
+                )}
+                <Text style={styles.buttonText}>Save</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -138,83 +209,69 @@ const Profile = () => {
           )}
         </View>
 
-        {/* Form Card */}
         <View style={styles.formCard}>
-          {/* Username */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Username</Text>
             <TextInput
               value={isEditing ? tempUsername : username}
-              onChangeText={setTempUsername}
+              onChange={(e) => setTempUsername(e.target.value)}
               editable={isEditing}
               style={[
                 styles.input,
                 isEditing ? styles.inputEditing : styles.inputReadonly,
               ]}
-              placeholder="Enter username"
             />
           </View>
 
-          {/* Email */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
             <TextInput
               value={isEditing ? tempEmail : email}
-              onChangeText={setTempEmail}
+              onChange={(e) => setTempEmail(e.target.value)}
               editable={isEditing}
-              keyboardType="email-address"
               style={[
                 styles.input,
                 isEditing ? styles.inputEditing : styles.inputReadonly,
               ]}
-              placeholder="your@email.com"
             />
           </View>
 
-          {/* Address */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              <MapPin size={16} style={{ display: "inline" }} />{" "}
-              Delivery/Collection Address
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MapPin size={16} />
+              <Text style={styles.label}> Address</Text>
+            </View>
             <TextInput
               value={isEditing ? tempAddress : address}
-              onChangeText={setTempAddress}
+              onChange={(e) => setTempAddress(e.target.value)}
               editable={isEditing}
               style={[
                 styles.input,
                 isEditing ? styles.inputEditing : styles.inputReadonly,
               ]}
-              placeholder="Your home or pickup address"
             />
           </View>
         </View>
 
-        {/* Eco Stats Title */}
         <Text style={styles.sectionTitle}>Your Eco Impact</Text>
-
-        {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Recycle color="#16a34a" size={32} />
+            <Recycle size={32} />
             <Text style={styles.statValue}>842</Text>
             <Text style={styles.statLabel}>Kg Recycled</Text>
           </View>
-
           <View style={styles.statCard}>
-            <Leaf color="#16a34a" size={32} />
+            <Leaf size={32} />
             <Text style={styles.statValue}>67</Text>
             <Text style={styles.statLabel}>Trees Saved</Text>
           </View>
-
           <View style={styles.statCard}>
-            <Trophy color="#16a34a" size={32} />
+            <Trophy size={32} />
             <Text style={styles.statValue}>Top 5%</Text>
-            <Text style={styles.statLabel}>Eco Leaderboard</Text>
+            <Text style={styles.statLabel}>Leaderboard</Text>
           </View>
         </View>
 
-        {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
