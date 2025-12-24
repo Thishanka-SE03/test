@@ -293,7 +293,7 @@ export default function EcoApp() {
         <header className="nav-header">
           <div className="logo-text">
             <img
-              src="src/assets/images/logo.png"
+              src="../../assets/images/logo.png"
               style={{ width: "40px", height: "40px" }}
               alt="logo"
             />
