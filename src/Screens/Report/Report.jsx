@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Map, Marker } from 'pigeon-maps';
-import { Camera, MapPin, Send, Leaf, X, CheckCircle, ImagePlus } from 'lucide-react';
+import { Camera, MapPin, Send, Leaf, X, CheckCircle, ImagePlus, FileText } from 'lucide-react';
 import ReportStyles from './styles/styles';
 import { submitGarbageReport } from './Service/supabaseReportService';
 import { supabase } from '../../lib/supabaseClient';
@@ -160,7 +160,7 @@ const GarbageReport = () => {
       <ReportStyles />
       <div className="main-card">
         <div className="top-banner">
-          <h1><Leaf size={28} /> Eco-Report</h1>
+          <h1><FileText size={28} /> Eco-Report</h1>
           <p>Illegal Waste Reporting</p>
         </div>
 

@@ -1,4 +1,4 @@
-import { text } from 'framer-motion/client';
+// styles.js
 import { StyleSheet, Dimensions, Platform } from 'react-native-web';
 
 const { width } = Dimensions.get('window');
@@ -10,6 +10,7 @@ const isTablet = width >= 768 && width < 1024;
 const isDesktop = width >= 1024;
 
 const columns = isDesktop ? 4 : isTablet ? 3 : 2;
+
 export const cardWidth = isWeb
   ? Math.min((width - 80) / columns - 20, 300)
   : (width - 60) / 2;
@@ -17,7 +18,7 @@ export const cardWidth = isWeb
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fdf6',
+    backgroundColor: '#f8fdf6', // Light eco background
   },
   scrollContent: {
     paddingBottom: 30,
@@ -25,7 +26,7 @@ export const styles = StyleSheet.create({
   header: {
     padding: isSmallDevice ? 20 : 28,
     paddingTop: 20,
-    backgroundColor: '#0a5f38',
+    backgroundColor: '#0a5f38', // Deep green header
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
   },
@@ -42,10 +43,11 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     opacity: 0.9,
   },
+
+  // Background is now dynamically set in component (tierStyle override)
   mainCard: {
     marginHorizontal: 20,
     marginTop: -20,
-    backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
     shadowColor: '#000',
@@ -53,12 +55,14 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 25,
     elevation: 16,
+    // backgroundColor removed — now controlled dynamically per tier
   },
   mainCardWeb: {
     marginTop: 40,
     maxWidth: 600,
     alignSelf: 'center',
   },
+
   thanksRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -69,7 +73,6 @@ export const styles = StyleSheet.create({
     fontSize: isSmallDevice ? 16 : 18,
     color: '#166534',
     textAlign: 'center',
-    alignItems: 'center',
     fontWeight: '600',
     marginLeft: 10,
   },
@@ -86,7 +89,9 @@ export const styles = StyleSheet.create({
     marginVertical: 16,
     paddingHorizontal: 10,
   },
-  levelItem: { alignItems: 'center' },
+  levelItem: {
+    alignItems: 'center',
+  },
   levelText: {
     fontSize: isSmallDevice ? 12 : 14,
     color: '#9ca3af',
@@ -104,7 +109,10 @@ export const styles = StyleSheet.create({
     backgroundColor: '#16a34a',
     marginTop: 6,
   },
-  progressContainer: { marginVertical: 20 },
+
+  progressContainer: {
+    marginVertical: 20,
+  },
   progressBackground: {
     height: 14,
     backgroundColor: '#ecfdf5',
@@ -128,13 +136,19 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4b5563',
   },
+
   nextTierText: {
     textAlign: 'center',
     fontSize: isSmallDevice ? 15 : 17,
     color: '#166534',
     marginTop: 12,
+    fontWeight: '500',
   },
-  bold: { fontWeight: 'bold', color: '#15803d' },
+  bold: {
+    fontWeight: 'bold',
+    color: '#15803d',
+  },
+
   infoGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -143,21 +157,40 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f0fdf4',
   },
-  infoItem: { alignItems: 'center' },
-  infoLabel: { fontSize: 13, color: '#6b7280' },
-  infoValue: { fontSize: 16, fontWeight: 'bold', color: '#166534', marginTop: 4 },
-  balanceText: { fontSize: 28, fontWeight: 'bold', color: '#16a34a' },
+  infoItem: {
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: '#6b7280',
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginTop: 4,
+  },
+  balanceText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+
   rewardsSection: {
-    paddingHorizontal: isWeb ? 20 : 20,
+    paddingHorizontal: 20,
     marginTop: 30,
   },
   sectionTitle: {
-    fontSize: isSmallDevice ? 10 : 24,
+    fontSize: isSmallDevice ? 20 : 24, // Fixed: was too small (10 → 20)
     fontWeight: 'bold',
     color: '#166534',
     textAlign: 'center',
     marginBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -165,17 +198,20 @@ export const styles = StyleSheet.create({
     gap: isWeb ? 20 : 16,
     paddingHorizontal: 4,
   },
+
   rewardCard: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#f8fffb',
     borderRadius: 20,
-    padding: 5,
+    padding: 16,
+    width: cardWidth,
     borderWidth: 2,
-    borderColor: '#86efac',
+    borderColor: '#a7f3d0',
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 6,
   },
+
   rewardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -186,13 +222,13 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     color: '#166534',
     backgroundColor: '#dcfce7',
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: 12,
     fontWeight: '700',
   },
   discountText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#dc2626',
     fontWeight: 'bold',
   },
@@ -201,27 +237,32 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#166534',
     marginBottom: 12,
-    minHeight: 44,
+    minHeight: 48,
   },
   pointsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'white',
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 2,
     borderColor: '#86efac',
   },
   pointsText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#166534',
-    marginLeft: 6,
+    marginLeft: 8,
+  },
+
+  disabledCard: {
+    opacity: 0.5,
+    borderColor: '#d1d5db',
   },
 });
 
-// Export responsive helpers for use in components
+// Export responsive helpers
 export const responsiveHelpers = {
   isWeb,
   isSmallDevice,

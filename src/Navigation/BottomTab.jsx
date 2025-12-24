@@ -5,12 +5,12 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Home,
   Gift,
-  MessageCircle,
+  FileText,
   User,
   QrCode,
   Home as HomeFilled,
   Gift as GiftFilled,
-  MessageCircle as MessageCircleFilled,
+  FileText as FileTextFilled,
   User as UserFilled,
   QrCode as QrCodeFilled,
 } from "lucide-react-native";
@@ -124,14 +124,14 @@ const BottomTab = () => {
           tabBarLabel: "Report",
           tabBarIcon: ({ focused }) =>
             focused ? (
-              <MessageCircleFilled
+              <FileTextFilled
                 size={moderateScale(25)}
                 color="#4CAF50"
                 fill="#4CAF50"
                 strokeWidth={2.5}
               />
             ) : (
-              <MessageCircle
+              <FileText
                 size={moderateScale(25)}
                 color="#9E9E9E"
                 strokeWidth={2}

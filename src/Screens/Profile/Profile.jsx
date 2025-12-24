@@ -9,20 +9,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native-web";
-import {
-  Camera,
-  MapPin,
-  Edit2,
-  Check,
-  X,
-  Leaf,
-  Recycle,
-  Trophy,
-} from "lucide-react";
+import { Camera, Edit2, Check, X, Leaf, Recycle, Trophy } from "lucide-react";
 import { styles } from "./styles/ProfileStyles";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { fetchCitizenAddress, updateUserProfile } from "./Service/profileUtils";
+import PopupModal from "./Service/PopupModal";
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -42,6 +34,16 @@ const Profile = () => {
   const [tempEmail, setTempEmail] = useState("");
   const [tempAddress, setTempAddress] = useState("");
   const [tempPhotoFile, setTempPhotoFile] = useState(null);
+
+  const [popup, setPopup] = useState({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
+  const showPopup = (title, message) => {
+    setPopup({ visible: true, title, message });
+  };
 
   useEffect(() => {
     if (!user) {
@@ -65,7 +67,7 @@ const Profile = () => {
         setTempEmail(user.email || "");
         setTempAddress(citizenAddr);
       } catch {
-        window.alert("Failed to load profile data");
+        showPopup("Error", "Failed to load profile data");
       } finally {
         setLoading(false);
       }
@@ -110,9 +112,9 @@ const Profile = () => {
       setTempPhotoFile(null);
       setIsEditing(false);
 
-      window.alert("Profile updated successfully");
+      showPopup("Success", "Profile updated successfully");
     } catch (err) {
-      window.alert(err.message || "Failed to save profile");
+      showPopup("Error", err.message || "Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -132,14 +134,16 @@ const Profile = () => {
       await logout();
       navigate("/login", { replace: true });
     } catch {
-      window.alert("Failed to log out");
+      showPopup("Error", "Failed to log out");
     }
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color="#16a34a" />
         </View>
       </SafeAreaView>
@@ -152,6 +156,7 @@ const Profile = () => {
         <View style={styles.header}>
           <Text style={styles.title}>My Profile</Text>
           <Text style={styles.subtitle}>Manage your account</Text>
+          <br></br>
         </View>
 
         <View style={styles.photoContainer}>
@@ -238,8 +243,7 @@ const Profile = () => {
 
           <View style={styles.inputGroup}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MapPin size={16} />
-              <Text style={styles.label}> Address</Text>
+              <Text style={styles.label}>Address</Text>
             </View>
             <TextInput
               value={isEditing ? tempAddress : address}
@@ -256,17 +260,17 @@ const Profile = () => {
         <Text style={styles.sectionTitle}>Your Eco Impact</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Recycle size={32} />
+            <Recycle size={32}  style={styles.icon}/>
             <Text style={styles.statValue}>842</Text>
             <Text style={styles.statLabel}>Kg Recycled</Text>
           </View>
           <View style={styles.statCard}>
-            <Leaf size={32} />
+            <Leaf size={32} style={styles.icon}/>
             <Text style={styles.statValue}>67</Text>
             <Text style={styles.statLabel}>Trees Saved</Text>
           </View>
           <View style={styles.statCard}>
-            <Trophy size={32} />
+            <Trophy size={32}  style={styles.icon}/>
             <Text style={styles.statValue}>Top 5%</Text>
             <Text style={styles.statLabel}>Leaderboard</Text>
           </View>
@@ -276,6 +280,13 @@ const Profile = () => {
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <PopupModal
+        visible={popup.visible}
+        title={popup.title}
+        message={popup.message}
+        onClose={() => setPopup({ ...popup, visible: false })}
+      />
     </SafeAreaView>
   );
 };
