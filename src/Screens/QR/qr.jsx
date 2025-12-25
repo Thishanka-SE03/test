@@ -8,7 +8,7 @@ const QRScannerPage = () => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
-  const BRIDGE_URL = "https://subsidiarily-hemimorphic-saul.ngrok-free.dev";
+  const BRIDGE_URL = import.meta.env.NGROK_BRIDGE_URL;
 
   const { user } = useAuth();
   const navigate = useNavigate();

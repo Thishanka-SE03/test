@@ -35,6 +35,7 @@ const STAGE_NAMES = [
   "Grand Canopy", // 76-87
   "Ancient Guardian", // 88-100
 ];
+const SESSION_DURATION_MS = 2 * 60 * 1000; // 2 minutes
 
 // --- Helper: Leaf Clusters with Particles ---
 const LeafCloud = ({ position, scale }) => (
@@ -284,41 +285,66 @@ export default function EcoApp() {
   const [celebrate, setCelebrate] = useState(false);
   const location = useLocation();
   const [itemToast, setItemToast] = useState(false);
-  const { width, height } = useWindowSize(); // ← Add this line
-  const BRIDGE_URL = "https://subsidiarily-hemimorphic-saul.ngrok-free.dev";
+  const { width, height } = useWindowSize();
+  const BRIDGE_URL = import.meta.env.NGROK_BRIDGE_URL;
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
+  // Load session from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("activeBinSession");
     if (saved) {
-      setSession(JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+      setSession(parsed);
     }
   }, []);
-  const stopSession = async () => {
-    window.location.href = "/dashboard";
-    try {
-      await fetch(`${BRIDGE_URL}/end-session`, {
-        method: "POST",
-      });
-    } catch (err) {
-      console.error("Failed to end session", err);
+
+  // Timer countdown logic
+  useEffect(() => {
+    if (!session?.startedAt) {
+      setTimeLeft(null);
+      return;
     }
 
-    // 🔥 THIS IS THE KEY
-    localStorage.removeItem("activeBinSession");
-    setSession(null); // <-- forces re-render
-  };
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - session.startedAt;
+      const remaining = SESSION_DURATION_MS - elapsed;
 
+      if (remaining <= 0) {
+        clearInterval(interval);
+        handleAutoEnd();
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [session?.startedAt]); // ← Only re-run when startedAt changes (critical for reset)
+
+  // Detect item added (treeLevel increase) → show toast + RESET TIMER
   useEffect(() => {
     if (treeLevel === null) return;
 
     if (lastTreeLevel !== null && treeLevel > lastTreeLevel && session) {
+      // Show toast
       setItemToast(true);
       setTimeout(() => setItemToast(false), 2000);
+
+      // 🔥 RESET TIMER: Update session with new start time
+      const newSession = {
+        ...session,
+        startedAt: Date.now(), // This resets the countdown to full duration
+      };
+      setSession(newSession);
+
+      // Also update localStorage so it persists across refreshes
+      localStorage.setItem("activeBinSession", JSON.stringify(newSession));
     }
 
     setLastTreeLevel(treeLevel);
-  }, [treeLevel, session]);
+  }, [treeLevel, session, lastTreeLevel]);
 
+  // Celebration when tree is complete
   useEffect(() => {
     if (treeLevel === 100 && session && !celebrate) {
       setCelebrate(true);
@@ -327,14 +353,47 @@ export default function EcoApp() {
         p_citizen: citizenId,
       });
 
-      //localStorage.removeItem("activeBinSession");
-      //setSession(null);
-
-      // ✅ auto-close celebration
       setTimeout(() => setCelebrate(false), 4000);
     }
   }, [treeLevel, session, celebrate]);
 
+  // Manual stop session
+  const stopSession = async () => {
+    try {
+      await fetch(`${BRIDGE_URL}/end-session`, { method: "POST" });
+    } catch (err) {
+      console.error("Failed to end session", err);
+    }
+
+    localStorage.removeItem("activeBinSession");
+    setSession(null);
+    setTimeLeft(null);
+
+    // 🎉 Show thank you message
+    setShowThankYou(true);
+    setTimeout(() => setShowThankYou(false), 5000);
+  };
+
+  // Auto-end on timeout
+  const handleAutoEnd = async () => {
+    console.log("⏱ Session expired");
+
+    try {
+      await fetch(`${BRIDGE_URL}/end-session`, { method: "POST" });
+    } catch (err) {
+      console.error("Failed to auto-end session", err);
+    }
+
+    localStorage.removeItem("activeBinSession");
+    setSession(null);
+    setTimeLeft(null);
+
+    // 🎉 Show thank you message
+    setShowThankYou(true);
+    setTimeout(() => setShowThankYou(false), 5000);
+  };
+
+  // Loading states...
   if (authLoading) {
     return <div className="loading-screen">Authenticating… 🔐</div>;
   }
@@ -345,7 +404,6 @@ export default function EcoApp() {
 
   const points = Math.min(100, Math.max(0, treeLevel));
   const currentStageIndex = Math.min(7, Math.floor(points / 12.5));
-
   return (
     <div className="page-container">
       <Styles />
@@ -368,7 +426,16 @@ export default function EcoApp() {
         {session && (
           <div className="session-banner">
             <span>
-              🟢 Smart Bin #{session.binId} active — Please add items one by one
+              🟢 Smart Bin #{session.binId} active
+              {timeLeft !== null && (
+                <strong style={{ marginLeft: "10px" }}>
+                  ⏱ {Math.floor(timeLeft / 60000)}:
+                  {String(Math.floor((timeLeft % 60000) / 1000)).padStart(
+                    2,
+                    "0"
+                  )}
+                </strong>
+              )}
             </span>
 
             <button
@@ -521,6 +588,54 @@ export default function EcoApp() {
                 <span>🍀</span>
                 <span>🌿</span>
               </div>
+            </div>
+          </div>
+        )}
+        {/* 🌍 Thank You Overlay - Beautifully Centered & Animated */}
+        {showThankYou && (
+          <div className="celebration-overlay">
+            {/* Re-use your perfect celebration overlay class */}
+            {/* It already has: fixed full screen, flex center, blur, fade in/out */}
+
+            {/* Floating leaves - full screen */}
+            <div className="floating-leaves">
+              <span>🍃</span>
+              <span>🌿</span>
+              <span>🍂</span>
+              <span>🌱</span>
+              <span>🌀</span>
+            </div>
+
+            {/* Thank You Card - Same style as celebrate-box but customized */}
+            <div
+              className="celebrate-box"
+              style={{ border: "3px solid #10b981", maxWidth: "480px" }}
+            >
+              <div className="text-8xl mb-8">🌍✨</div>
+
+              <h2
+                style={{ fontSize: "36px", color: "#065f46", margin: "16px 0" }}
+              >
+                Thank You!
+              </h2>
+
+              <p
+                style={{ fontSize: "24px", color: "#064e3b", margin: "16px 0" }}
+              >
+                Your actions today helped make our planet cleaner and greener.
+              </p>
+
+              <p
+                style={{
+                  fontSize: "18px",
+                  color: "#10b981",
+                  fontWeight: "600",
+                }}
+              >
+                Together, we're building a better world — one step at a time.
+              </p>
+
+              <div className="mt-10 text-7xl">🌱❤️</div>
             </div>
           </div>
         )}

@@ -174,10 +174,13 @@ const Styles = () => (
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.8s ease-out;
+  animation: fadeIn 0.8s ease-out, fadeOut 1s ease-in 4s forwards;
   pointer-events: none; /* Allows clicks through if needed */
 }
-
+/* New class for Thank You fade-out to avoid inheriting bottom positioning */
+.celebration-fade-out {
+  animation: fadeIn 0.8s ease-out, fadeOut 1s ease-in 4s forwards;
+}
 .celebrate-box {
   background: white;
   border-radius: 24px;
