@@ -1,11 +1,17 @@
 // QRScannerPage.jsx
-import React, { useEffect, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useEffect, useState } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const QRScannerPage = () => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const BRIDGE_URL = "https://subsidiarily-hemimorphic-saul.ngrok-free.dev";
 
+  const { user } = useAuth();
+  const navigate = useNavigate();
   useEffect(() => {
     if (!isScanning) return;
 
@@ -20,11 +26,52 @@ const QRScannerPage = () => {
       false
     );
 
-    const onScanSuccess = (decodedText) => {
-      setScanResult(decodedText);
-      setIsScanning(false);
-      scanner.clear();
-      alert(`Success! Scanned: ${decodedText}`);
+    const onScanSuccess = async (decodedText) => {
+      try {
+        const clean = decodedText.trim();
+
+        let binId = null;
+
+        // Accept formats: "BIN:3", "SMARTBIN:3", "3"
+        if (clean.includes(":")) {
+          const parts = clean.split(":");
+          binId = parts[1];
+        } else if (/^\d+$/.test(clean)) {
+          binId = clean;
+        }
+
+        if (!binId) {
+          alert("Invalid Smart Bin QR");
+          return;
+        }
+
+        // Save session locally
+        localStorage.setItem(
+          "activeBinSession",
+          JSON.stringify({
+            binId,
+            citizenId: user.id,
+            startedAt: Date.now(),
+          })
+        );
+
+        // Notify Node bridge
+        await fetch(`${BRIDGE_URL}/start-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenId: user.id,
+            binId,
+          }),
+        });
+
+        scanner.clear();
+        setIsScanning(false); // unmount scanner
+        setShouldRedirect(true);
+      } catch (err) {
+        console.error(err);
+        alert("Invalid Smart Bin QR");
+      }
     };
 
     const onScanFailure = () => {
@@ -37,6 +84,11 @@ const QRScannerPage = () => {
       scanner.clear().catch(() => {});
     };
   }, [isScanning]);
+  useEffect(() => {
+    if (shouldRedirect) {
+      window.location.href = "/dashboard";
+    }
+  }, [shouldRedirect, navigate]);
 
   const handleRestart = () => {
     setScanResult(null);
@@ -44,115 +96,106 @@ const QRScannerPage = () => {
   };
 
   return (
-    <div className="scanner-container">
-      <h2 className="title">QR Code Scanner</h2>
-      <p className="instruction">Point your camera at a QR code</p>
+    <div className="page">
+      <div className="scanner-container">
+        <h2 className="title">QR Code Scanner</h2>
+        <p className="instruction">Point your camera at a QR code</p>
 
-      {isScanning ? (
-        <div id="qr-reader" className="qr-reader" />
-      ) : (
-        <div className="result-card">
-          <h3 className="success-title">Scan Complete! ✅</h3>
-          <div className="result">
-            <strong>Result:</strong>
-            <br />
-            <a href={scanResult} target="_blank" rel="noopener noreferrer" className="result-link">
-              {scanResult}
-            </a>
-          </div>
-          <button onClick={handleRestart} className="scan-again-btn">
-            Scan Another QR Code
-          </button>
-        </div>
-      )}
+        {isScanning && <div id="qr-reader" className="qr-reader" />}
 
-      <style jsx>{`
-        .scanner-container {
-          padding: 24px;
-          font-family: 'Segoe UI', Arial, sans-serif;
-          max-width: 600px;
-          margin: 0 auto;
-          text-align: center;
-          background-color: #f8fff8;
-          min-height: 100vh;
-        }
+        <style jsx>{`
+          .page {
+            height: 100vh;
+            overflow: scroll;
+          }
 
-        .title {
-          color: #2e7d32;
-          font-size: 28px;
-          margin-bottom: 8px;
-          font-weight: 600;
-        }
+          .scanner-container {
+            padding: 24px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            background-color: #f8fff8;
+            min-height: 100vh;
+          }
 
-        .instruction {
-          color: #4caf50;
-          font-size: 16px;
-          margin-bottom: 24px;
-        }
+          .title {
+            color: #2e7d32;
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+          }
 
-        .qr-reader {
-          width: 100%;
-          border: 4px solid #4caf50;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 8px 24px rgba(76, 175, 80, 0.2);
-        }
+          .instruction {
+            color: #4caf50;
+            font-size: 16px;
+            margin-bottom: 24px;
+          }
 
-        .result-card {
-          background: white;
-          border-radius: 16px;
-          padding: 32px 24px;
-          margin-top: 32px;
-          box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15);
-          border: 2px solid #e8f5e9;
-        }
+          .qr-reader {
+            width: 100%;
+            border: 4px solid #4caf50;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.2);
+          }
 
-        .success-title {
-          color: #2e7d32;
-          font-size: 24px;
-          margin-bottom: 20px;
-        }
+          .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 24px;
+            margin-top: 32px;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15);
+            border: 2px solid #e8f5e9;
+          }
 
-        .result {
-          background-color: #e8f5e9;
-          padding: 16px;
-          border-radius: 12px;
-          margin: 20px 0;
-          word-break: break-all;
-          font-size: 16px;
-          color: #1b5e20;
-        }
+          .success-title {
+            color: #2e7d32;
+            font-size: 24px;
+            margin-bottom: 20px;
+          }
 
-        .result-link {
-          color: #4caf50;
-          text-decoration: underline;
-          font-weight: 500;
-        }
+          .result {
+            background-color: #e8f5e9;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-size: 16px;
+            color: #1b5e20;
+          }
 
-        .scan-again-btn {
-          background-color: #4caf50;
-          color: white;
-          border: none;
-          padding: 14px 32px;
-          font-size: 18px;
-          font-weight: 600;
-          border-radius: 12px;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-          transition: all 0.3s ease;
-          margin-top: 16px;
-        }
+          .result-link {
+            color: #4caf50;
+            text-decoration: underline;
+            font-weight: 500;
+          }
 
-        .scan-again-btn:hover {
-          background-color: #388e3c;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-        }
+          .scan-again-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 16px;
+          }
 
-        .scan-again-btn:active {
-          transform: translateY(0);
-        }
-      `}</style>
+          .scan-again-btn:hover {
+            background-color: #388e3c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+          }
+
+          .scan-again-btn:active {
+            transform: translateY(0);
+          }
+        `}</style>
+      </div>
     </div>
   );
 };

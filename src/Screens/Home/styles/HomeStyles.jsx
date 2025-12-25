@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const Styles = () => (
   <style>{`
@@ -153,6 +153,156 @@ const Styles = () => (
       border-color: #34d399;
       transform: translateY(-2px);
     }
+      .session-banner {
+  margin: 12px auto;
+  padding: 12px 20px;
+  width: fit-content;
+  background: rgba(52, 211, 153, 0.15);
+  border-radius: 12px;
+  color: #34d399;
+  font-weight: 600;
+}
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(46, 125, 50, 0.25); /* Soft green overlay */
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.8s ease-out;
+  pointer-events: none; /* Allows clicks through if needed */
+}
+
+.celebrate-box {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(46, 125, 50, 0.3);
+  max-width: 420px;
+  width: 90%;
+  animation: scaleUp 1.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              glowPulse 3s infinite alternate;
+  border: 3px solid #4caf50;
+  position: relative;
+  overflow: hidden;
+}
+
+.celebrate-box h2 {
+  font-size: 32px;
+  color: #2e7d32;
+  margin: 16px 0 12px;
+  font-weight: 700;
+}
+
+.celebrate-box p {
+  font-size: 24px;
+  color: #1b5e20;
+  margin: 0 0 16px;
+}
+
+.celebrate-box small {
+  display: block;
+  color: #4caf50;
+  font-size: 16px;
+  font-style: italic;
+}
+
+.tree-animation {
+  font-size: 64px;
+  margin-bottom: 24px;
+  animation: growTree 2.5s ease-in-out;
+}
+
+.floating-leaves {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-leaves span {
+  position: absolute;
+  font-size: 32px;
+  opacity: 0.7;
+  animation: floatUp 6s infinite linear;
+}
+
+.floating-leaves span:nth-child(1) { left: 10%; animation-delay: 0s; }
+.floating-leaves span:nth-child(2) { left: 30%; animation-delay: 1.2s; }
+.floating-leaves span:nth-child(3) { left: 50%; animation-delay: 2.4s; }
+.floating-leaves span:nth-child(4) { left: 70%; animation-delay: 3.6s; }
+.floating-leaves span:nth-child(5) { left: 90%; animation-delay: 4.8s; }
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes glowPulse {
+  from { box-shadow: 0 20px 60px rgba(76, 175, 80, 0.3); }
+  to { box-shadow: 0 20px 80px rgba(76, 175, 80, 0.5); }
+}
+
+@keyframes growTree {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100%) rotate(0deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-150%) rotate(360deg); opacity: 0; }
+}
+
+/* Fade out at the end (triggered by timeout) */
+.celebration-overlay {
+  animation: fadeIn 0.8s ease-out, fadeOut 1s ease-in 3s forwards;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+.item-toast {
+  position: fixed;
+  top: 90px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  animation: slideIn 0.4s ease;
+  z-index: 999;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 
     /* Mobile Responsive Logic */
     @media (max-width: 1200px) {

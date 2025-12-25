@@ -14,6 +14,15 @@ import Styles from "./styles/HomeStyles";
 import useCitizenTree from "/src/hooks/useCitizenTree.jsx";
 import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { Navigate, useLocation } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+import Confetti from "react-confetti";
+import { useWindowSize } from "react-use";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // --- Configuration ---
 const STAGE_NAMES = [
@@ -270,6 +279,61 @@ export default function EcoApp() {
   const citizenId = user?.id;
 
   const { treeLevel, loading } = useCitizenTree(citizenId);
+  const [session, setSession] = useState(null);
+  const [lastTreeLevel, setLastTreeLevel] = useState(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const location = useLocation();
+  const [itemToast, setItemToast] = useState(false);
+  const { width, height } = useWindowSize(); // ← Add this line
+  const BRIDGE_URL = "https://subsidiarily-hemimorphic-saul.ngrok-free.dev";
+
+  useEffect(() => {
+    const saved = localStorage.getItem("activeBinSession");
+    if (saved) {
+      setSession(JSON.parse(saved));
+    }
+  }, []);
+  const stopSession = async () => {
+    window.location.href = "/dashboard";
+    try {
+      await fetch(`${BRIDGE_URL}/end-session`, {
+        method: "POST",
+      });
+    } catch (err) {
+      console.error("Failed to end session", err);
+    }
+
+    // 🔥 THIS IS THE KEY
+    localStorage.removeItem("activeBinSession");
+    setSession(null); // <-- forces re-render
+  };
+
+  useEffect(() => {
+    if (treeLevel === null) return;
+
+    if (lastTreeLevel !== null && treeLevel > lastTreeLevel && session) {
+      setItemToast(true);
+      setTimeout(() => setItemToast(false), 2000);
+    }
+
+    setLastTreeLevel(treeLevel);
+  }, [treeLevel, session]);
+
+  useEffect(() => {
+    if (treeLevel === 100 && session && !celebrate) {
+      setCelebrate(true);
+
+      supabase.rpc("complete_tree_if_ready", {
+        p_citizen: citizenId,
+      });
+
+      //localStorage.removeItem("activeBinSession");
+      //setSession(null);
+
+      // ✅ auto-close celebration
+      setTimeout(() => setCelebrate(false), 4000);
+    }
+  }, [treeLevel, session, celebrate]);
 
   if (authLoading) {
     return <div className="loading-screen">Authenticating… 🔐</div>;
@@ -293,13 +357,40 @@ export default function EcoApp() {
         <header className="nav-header">
           <div className="logo-text">
             <img
-              src="../../assets/images/logo.png"
+              src="src/assets/images/logo.png"
               style={{ width: "40px", height: "40px" }}
               alt="logo"
             />
             EcoSphere
           </div>
         </header>
+        {/* ✅ SAFE */}
+        {session && (
+          <div className="session-banner">
+            <span>
+              🟢 Smart Bin #{session.binId} active — Please add items one by one
+            </span>
+
+            <button
+              onClick={stopSession}
+              style={{
+                marginLeft: "15px",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                border: "none",
+                background: "#ef4444",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "0.75rem",
+              }}
+            >
+              End Session
+            </button>
+          </div>
+        )}
+        {itemToast && (
+          <div className="item-toast">♻️ Item recorded successfully</div>
+        )}
 
         <main className="dashboard-grid">
           {/* Left: Tree Status (NO TEST CONTROLLER) */}
@@ -403,6 +494,36 @@ export default function EcoApp() {
             </div>
           </section>
         </main>
+        {celebrate && (
+          <div className="celebration-overlay">
+            <Confetti
+              width={width}
+              height={height}
+              recycle={false}
+              numberOfPieces={300}
+              gravity={0.15}
+              colors={["#4caf50", "#81c784", "#2e7d32", "#a5d6a7", "#66bb6a"]} // Eco greens
+              tweenDuration={8000}
+              // Optional: drawShape for custom leaves (advanced, or keep rectangles for simplicity)
+            />
+
+            <div className="celebrate-box">
+              <div className="tree-animation">🌱 → 🌿 → 🌳</div>
+
+              <h2>🎉 Congratulations!</h2>
+              <p>You planted a real tree!</p>
+              <small>CO₂ reduced • Oxygen restored • Future protected</small>
+
+              <div className="floating-leaves">
+                <span>🍃</span>
+                <span>🍂</span>
+                <span>🍃</span>
+                <span>🍀</span>
+                <span>🌿</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
