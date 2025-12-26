@@ -18,6 +18,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
+import logo from "../../assets/images/logo.png";
+
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -415,7 +417,7 @@ export default function EcoApp() {
         <header className="nav-header">
           <div className="logo-text">
             <img
-              src="../../assets/images/logo.png"
+              src={logo}
               style={{ width: "40px", height: "40px" }}
               alt="logo"
             />
