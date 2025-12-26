@@ -55,25 +55,39 @@ export const signUpCitizen = async ({
   if (authError) throw authError;
 
   const userId = authData.user.id;
-  const citizenid = authData.user.id;
-  // 2️⃣ Insert into public.users table
+  const citizenid = userId; // same UUID
+
+  // 2️⃣ Insert into users table
   const { error: dbError } = await supabase.from("users").insert([
     {
       id: userId,
       email,
       username,
-      usertype: 2,
+      usertype: 2, // citizen
     },
   ]);
 
   if (dbError) throw dbError;
 
+  // 3️⃣ Insert into citizen table
   const { error: citizenError } = await supabase.from("citizen").insert([
-    {     
+    {
       fullname,
       citizenid,
     },
   ]);
+
   if (citizenError) throw citizenError;
+
+  // 4️⃣ Create initial tree status for citizen 🌱
+  const { error: treeError } = await supabase.from("treestatus").insert([
+    {
+      citizenno: citizenid,
+      // treecount & treelevel will use DB defaults (0)
+    },
+  ]);
+
+  if (treeError) throw treeError;
+
   return authData.user;
 };

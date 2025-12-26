@@ -224,12 +224,13 @@ const SignupPage = () => {
         <div className={styles.overlay} />
 
         <section className={styles.content}>
-          <h2 className={styles.heroTitle}>Check your email 📬</h2>
+          <h2 className={styles.heroTitle}>Account Created Successfully!📬</h2>
 
           <p className={styles.heroSubtitle}>
-            We’ve sent a confirmation link to <strong>{formData.email}</strong>.
+            Please log in now<strong>{formData.email}</strong>.
             <br />
-            Please verify your account before logging in.
+            Thank you for joining EcoSphere! Let's make the world a greener
+            place together.
           </p>
 
           <Link to="/login" className={styles.loginLink}>
