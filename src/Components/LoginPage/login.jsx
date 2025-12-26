@@ -4,11 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./style/LoginPage.module.css";
 import logo from "../../assets/images/logo.png";
-import { image } from "framer-motion/client";
 import { citizenLogin } from "../../services/authService";
 import { sendPasswordReset } from "../../services/authService";
 
-// images for background shuffle
+// Background images
 import bg1 from "../Images/Caro1.jpg";
 import bg2 from "../Images/Caro2.jpg";
 import bg3 from "../Images/Caro3.jpg";
@@ -19,14 +18,13 @@ const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
 
 const LoginPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
     }
   }, [user]);
-  // ✅ ADD THIS
-  const [isLoading, setIsLoading] = useState(false);
 
   const [index, setIndex] = useState(0);
   const [formData, setFormData] = useState({
@@ -36,11 +34,12 @@ const LoginPage = () => {
   const [errors, setErrors] = useState({
     email: "",
     password: "",
+    general: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const [isLoadingReset, setIsLoadingReset] = useState(false);
 
-  // Preload images (no flicker)
+  // Preload background images
   useEffect(() => {
     backgroundImages.forEach((src) => {
       const img = new Image();
@@ -48,7 +47,7 @@ const LoginPage = () => {
     });
   }, []);
 
-  // Shuffle background
+  // Background shuffle
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % backgroundImages.length);
@@ -56,23 +55,15 @@ const LoginPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [id]: value }));
+
     if (errors[id]) {
-      setErrors((prev) => ({
-        ...prev,
-        [id]: "",
-      }));
+      setErrors((prev) => ({ ...prev, [id]: "" }));
     }
   };
 
-  // Validation functions
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
@@ -82,45 +73,36 @@ const LoginPage = () => {
 
   const validatePassword = (password) => {
     if (!password) return "Password is required";
-    if (password.length < 6) return "Password must be at least 6 characters";
     return "";
   };
 
-  // Form validation
   const validateForm = () => {
     const newErrors = {
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
     };
-
     setErrors(newErrors);
     return !newErrors.email && !newErrors.password;
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-
     try {
-      const userProfile = await citizenLogin(formData.email, formData.password);
-
-      console.log("Logged in citizen:", userProfile);
-
+      await citizenLogin(formData.email, formData.password);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Login failed:", error.message);
       setErrors((prev) => ({
         ...prev,
-        general: error.message || "Invalid credentials",
+        general: error.message || "Invalid email or password",
       }));
     } finally {
       setIsSubmitting(false);
     }
   };
+
   const handleForgotPassword = async () => {
     if (!formData.email) {
       setErrors((prev) => ({
@@ -130,27 +112,25 @@ const LoginPage = () => {
       return;
     }
 
+    setIsLoadingReset(true);
     try {
-      setIsLoading(true); // 🔥 start animation
       await sendPasswordReset(formData.email);
-      alert("Password reset email sent. Please check your inbox.");
+      alert("Password reset email sent! Check your inbox (and spam folder).");
     } catch (error) {
-      alert(error.message);
+      alert(error.message || "Failed to send reset email");
     } finally {
-      setIsLoading(false); // 🔥 stop animation
+      setIsLoadingReset(false);
     }
   };
 
   return (
     <main className={styles.landingPage}>
-      {/* 🔄 Image Shuffle Background */}
+      {/* Background Shuffle */}
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
           className={styles.bgImage}
-          style={{
-            backgroundImage: `url(${backgroundImages[index]})`,
-          }}
+          style={{ backgroundImage: `url(${backgroundImages[index]})` }}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
@@ -158,89 +138,93 @@ const LoginPage = () => {
         />
       </AnimatePresence>
 
-      {/* Emerald overlay */}
       <div className={styles.overlay} />
 
-      {/* Content */}
       <section className={styles.content}>
-        <header className={styles.header}>
-          <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
-        </header>
-        {/* Welcome Section */}
-        <div className={styles.welcomeSection}>
-          <h2 className={styles.heroTitle}>Welcome Back!</h2>
-          <p className={styles.heroSubtitle}>
-            Enter your credentials to access your account
-          </p>
+        <div className={styles.innerContent}>
+          <header className={styles.header}>
+            <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
+          </header>
+
+          <div className={styles.welcomeSection}>
+            <h2 className={styles.heroTitle}>Welcome Back!</h2>
+            <p className={styles.heroSubtitle}>
+              Log in to continue your sustainable journey
+            </p>
+          </div>
+
+          {errors.general && (
+            <div className={styles.errorMessage}>{errors.general}</div>
+          )}
+
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.inputGroup}>
+              <input
+                type="email"
+                id="email"
+                placeholder="Email Address *"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
+                aria-invalid={!!errors.email}
+                required
+              />
+              {errors.email && (
+                <span className={styles.errorText}>{errors.email}</span>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <input
+                type="password"
+                id="password"
+                placeholder="Password *"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
+                aria-invalid={!!errors.password}
+                required
+              />
+              {errors.password && (
+                <span className={styles.errorText}>{errors.password}</span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={isLoadingReset}
+              className={styles.forgotPassword}
+            >
+              {isLoadingReset ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  Sending reset link...
+                </>
+              ) : (
+                "Forgot Password?"
+              )}
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`${styles.btnPrimary} ${isSubmitting ? styles.btnDisabled : ""}`}
+            >
+              {isSubmitting ? "Logging in..." : "Log In"}
+            </button>
+          </form>
+
+          {/* NEW: Sign Up Redirect */}
+          <div className={styles.signupRedirect}>
+            <p>
+              Don't have an account?{" "}
+              <Link to="/signup" className={styles.signupLink}>
+                Sign up here
+              </Link>
+            </p>
+          </div>
         </div>
-
-        {/* Display general error */}
-        {errors.general && (
-          <div className={styles.errorMessage}>{errors.general}</div>
-        )}
-
-        {/* Login Form Section */}
-        <form id="loginForm" onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
-            <input
-              type="email"
-              id="email"
-              placeholder="Enter your email address"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.email ? styles.inputError : ""
-              }`}
-            />
-            {errors.email && (
-              <span className={styles.errorText}>{errors.email}</span>
-            )}
-          </div>
-
-          <div className={styles.inputGroup}>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.password ? styles.inputError : ""
-              }`}
-            />
-            {errors.password && (
-              <span className={styles.errorText}>{errors.password}</span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className={styles.forgotPassword}
-            onClick={handleForgotPassword}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className={styles.loadingWrapper}>
-                <span className={styles.spinner}></span>
-                Sending reset email...
-              </span>
-            ) : (
-              "Forgot Password?"
-            )}
-          </button>
-
-          <button
-            type="submit"
-            className={`${styles.btnSecondary} ${
-              isSubmitting ? styles.btnDisabled : ""
-            }`}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Logging in..." : "Log In"}
-          </button>
-        </form>
       </section>
     </main>
   );

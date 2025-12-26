@@ -78,16 +78,5 @@ export const signUpCitizen = async ({
   ]);
 
   if (citizenError) throw citizenError;
-
-  // 4️⃣ Create initial tree status for citizen 🌱
-  const { error: treeError } = await supabase.from("treestatus").insert([
-    {
-      citizenno: citizenid,
-      // treecount & treelevel will use DB defaults (0)
-    },
-  ]);
-
-  if (treeError) throw treeError;
-
   return authData.user;
 };

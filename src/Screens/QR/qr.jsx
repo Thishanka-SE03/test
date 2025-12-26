@@ -107,6 +107,7 @@ const QRScannerPage = () => {
           .page {
             height: 100vh;
             overflow: scroll;
+            overflow-x: hidden;
           }
 
           .scanner-container {

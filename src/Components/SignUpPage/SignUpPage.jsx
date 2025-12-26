@@ -95,10 +95,8 @@ const SignupPage = () => {
       return;
     }
 
-    const strongRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-    const mediumRegex =
-      /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+    const mediumRegex = /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
 
     if (strongRegex.test(password)) {
       setPasswordStrength("strong");
@@ -217,29 +215,55 @@ const SignupPage = () => {
         return "";
     }
   };
-  // 🔐 Email verification screen
+
+  // 🔐 Email verification screen - FIXED WITH PROPER STYLING
   if (showVerificationNotice) {
     return (
       <main className={styles.landingPage}>
+        {/* Background & Overlay */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            className={styles.bgImage}
+            style={{
+              backgroundImage: `url(${backgroundImages[index]})`,
+            }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        </AnimatePresence>
         <div className={styles.overlay} />
 
         <section className={styles.content}>
-          <h2 className={styles.heroTitle}>Account Created Successfully!📬</h2>
+          <header className={styles.header}>
+            <Link to="/">
+              <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
+            </Link>
+          </header>
 
-          <p className={styles.heroSubtitle}>
-            Please log in now<strong>{formData.email}</strong>.
-            <br />
-            Thank you for joining EcoSphere! Let's make the world a greener
-            place together.
-          </p>
-
-          <Link to="/login" className={styles.loginLink}>
-            Back to Login
-          </Link>
+          <div className={styles.successSection}>
+            <h2 className={styles.heroTitle}>Account Created Successfully! 📬</h2>
+            <p className={styles.heroSubtitle}>
+              We've sent a verification email to <strong>{formData.email}</strong>.
+              <br />
+              Please check your inbox (and spam folder) to verify your account.
+              <br /><br />
+              Thank you for joining EcoSphere! Let's make the world greener together. 🌱
+            </p>
+            <Link to="/login" className={styles.btnPrimary}>
+              Go to Login
+            </Link>
+            <div className={styles.loginRedirect}>
+              <p>Didn't receive the email? <Link to="/login" className={styles.loginLink}>Resend</Link></p>
+            </div>
+          </div>
         </section>
       </main>
     );
   }
+
   return (
     <main className={styles.landingPage}>
       {/* 🔄 Image Shuffle Background */}
@@ -262,173 +286,185 @@ const SignupPage = () => {
 
       {/* Content */}
       <section className={styles.content}>
-        <header className={styles.header}>
-          <Link to="/">
-            <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
-          </Link>
-        </header>
+        <div className={styles.innerContent}>
+          <header className={styles.header}>
+            <Link to="/">
+              <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
+            </Link>
+          </header>
 
-        {/* Welcome Section */}
-        <div className={styles.welcomeSection}>
-          <h2 className={styles.heroTitle}>Join EcoSphere</h2>
-          <p className={styles.heroSubtitle}>
-            Create your account to start your sustainable journey
-          </p>
-        </div>
-
-        {/* Display general error */}
-        {errors.general && (
-          <div className={styles.errorMessage}>{errors.general}</div>
-        )}
-
-        {/* Signup Form */}
-        <form id="signupForm" onSubmit={handleSubmit}>
-          {/* Name fields side by side */}
-
-          <div className={styles.inputGroup}>
-            <input
-              type="text"
-              id="fullName"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              className={`${styles.input} ${
-                errors.fullName ? styles.inputError : ""
-              }`}
-            />
-            {errors.fullName && (
-              <span className={styles.errorText}>{errors.fullName}</span>
-            )}
-          </div>
-
-          {/* Email field */}
-          <div className={styles.inputGroup}>
-            <input
-              type="email"
-              id="email"
-              placeholder="Enter your email address"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.email ? styles.inputError : ""
-              }`}
-            />
-            {errors.email && (
-              <span className={styles.errorText}>{errors.email}</span>
-            )}
-          </div>
-          {/* username field */}
-          <div className={styles.inputGroup}>
-            <input
-              type="text"
-              id="username"
-              placeholder="Enter your username"
-              value={formData.username}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.username ? styles.inputError : ""
-              }`}
-            />
-            {errors.username && (
-              <span className={styles.errorText}>{errors.username}</span>
-            )}
-          </div>
-
-          {/* Password field with strength indicator */}
-          <div className={styles.inputGroup}>
-            <input
-              type="password"
-              id="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.password ? styles.inputError : ""
-              } ${getPasswordStrengthClass()}`}
-            />
-            {formData.password && (
-              <div
-                className={`${styles.passwordStrength} ${styles[passwordStrength]}`}
-              >
-                <span>{getPasswordStrengthText()}</span>
-                <div className={styles.strengthBar}>
-                  <div className={styles.strengthFill}></div>
-                </div>
-              </div>
-            )}
-            {errors.password && (
-              <span className={styles.errorText}>{errors.password}</span>
-            )}
-          </div>
-
-          {/* Confirm Password field */}
-          <div className={styles.inputGroup}>
-            <input
-              type="password"
-              id="confirmPassword"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              required
-              className={`${styles.input} ${
-                errors.confirmPassword ? styles.inputError : ""
-              }`}
-            />
-            {errors.confirmPassword && (
-              <span className={styles.errorText}>{errors.confirmPassword}</span>
-            )}
-          </div>
-
-          {/* Terms and Conditions */}
-          <div className={styles.termsGroup}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                id="agreeToTerms"
-                checked={formData.agreeToTerms}
-                onChange={handleInputChange}
-                className={styles.checkboxInput}
-              />
-              <span className={styles.checkboxText}>
-                I agree to the{" "}
-                <Link to="/terms" className={styles.termsLink}>
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link to="/privacy" className={styles.termsLink}>
-                  Privacy Policy
-                </Link>
-              </span>
-            </label>
-            {errors.agreeToTerms && (
-              <span className={styles.errorText}>{errors.agreeToTerms}</span>
-            )}
-          </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            className={`${styles.btnPrimary} ${
-              isSubmitting ? styles.btnDisabled : ""
-            }`}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creating Account..." : "Create Account"}
-          </button>
-
-          {/* Login redirect */}
-          <div className={styles.loginRedirect}>
-            <p>
-              Already have an account?{" "}
-              <Link to="/login" className={styles.loginLink}>
-                Log in here
-              </Link>
+          {/* Welcome Section */}
+          <div className={styles.welcomeSection}>
+            <h2 className={styles.heroTitle}>Join EcoSphere</h2>
+            <p className={styles.heroSubtitle}>
+              Create your account to start your sustainable journey
             </p>
           </div>
-        </form>
+
+          {/* Display general error */}
+          {errors.general && (
+            <div className={styles.errorMessage}>{errors.general}</div>
+          )}
+
+          {/* Signup Form */}
+          <form id="signupForm" onSubmit={handleSubmit} className={styles.form}>
+            {/* Full Name */}
+            <div className={styles.inputGroup}>
+              <input
+                type="text"
+                id="fullName"
+                placeholder="Full Name *"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className={`${styles.input} ${
+                  errors.fullName ? styles.inputError : ""
+                }`}
+                aria-invalid={!!errors.fullName}
+                aria-describedby={errors.fullName ? "fullName-error" : undefined}
+                required
+              />
+              {errors.fullName && (
+                <span id="fullName-error" className={styles.errorText}>{errors.fullName}</span>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className={styles.inputGroup}>
+              <input
+                type="email"
+                id="email"
+                placeholder="Email Address *"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`${styles.input} ${
+                  errors.email ? styles.inputError : ""
+                }`}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                required
+              />
+              {errors.email && (
+                <span id="email-error" className={styles.errorText}>{errors.email}</span>
+              )}
+            </div>
+
+            {/* Username */}
+            <div className={styles.inputGroup}>
+              <input
+                type="text"
+                id="username"
+                placeholder="Username *"
+                value={formData.username}
+                onChange={handleInputChange}
+                className={`${styles.input} ${
+                  errors.username ? styles.inputError : ""
+                }`}
+                aria-invalid={!!errors.username}
+                aria-describedby={errors.username ? "username-error" : undefined}
+                required
+              />
+              {errors.username && (
+                <span id="username-error" className={styles.errorText}>{errors.username}</span>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className={styles.inputGroup}>
+              <input
+                type="password"
+                id="password"
+                placeholder="Create Password *"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`${styles.input} ${
+                  errors.password ? styles.inputError : ""
+                } ${getPasswordStrengthClass()}`}
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? "password-error" : undefined}
+                required
+              />
+              {formData.password && (
+                <div className={`${styles.passwordStrength} ${styles[passwordStrength]}`}>
+                  <span>{getPasswordStrengthText()}</span>
+                  <div className={styles.strengthBar}>
+                    <div className={styles.strengthFill}></div>
+                  </div>
+                </div>
+              )}
+              {errors.password && (
+                <span id="password-error" className={styles.errorText}>{errors.password}</span>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className={styles.inputGroup}>
+              <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm Password *"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className={`${styles.input} ${
+                  errors.confirmPassword ? styles.inputError : ""
+                }`}
+                aria-invalid={!!errors.confirmPassword}
+                aria-describedby={errors.confirmPassword ? "confirm-error" : undefined}
+                required
+              />
+              {errors.confirmPassword && (
+                <span id="confirm-error" className={styles.errorText}>{errors.confirmPassword}</span>
+              )}
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className={styles.termsGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  id="agreeToTerms"
+                  checked={formData.agreeToTerms}
+                  onChange={handleInputChange}
+                  className={styles.checkboxInput}
+                />
+                <span className={styles.checkboxText}>
+                  I agree to the{" "}
+                  <Link to="/terms" className={styles.termsLink}>
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/privacy" className={styles.termsLink}>
+                    Privacy Policy
+                  </Link>
+                  <span className={styles.required}>*</span>
+                </span>
+              </label>
+              {errors.agreeToTerms && (
+                <span className={styles.errorText}>{errors.agreeToTerms}</span>
+              )}
+            </div>
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              className={`${styles.btnPrimary} ${
+                isSubmitting ? styles.btnDisabled : ""
+              }`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating Account..." : "Create Account"}
+            </button>
+
+            {/* Login redirect */}
+            <div className={styles.loginRedirect}>
+              <p>
+                Already have an account?{" "}
+                <Link to="/login" className={styles.loginLink}>
+                  Log in here
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </section>
     </main>
   );
