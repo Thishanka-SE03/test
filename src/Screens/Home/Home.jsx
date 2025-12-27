@@ -20,7 +20,6 @@ import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import logo from "../../assets/images/logo.png";
 
-
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -288,7 +287,7 @@ export default function EcoApp() {
   const location = useLocation();
   const [itemToast, setItemToast] = useState(false);
   const { width, height } = useWindowSize();
-  const BRIDGE_URL = import.meta.env.NGROK_BRIDGE_URL;
+  const BRIDGE_URL = import.meta.env.VITE_BRIDGE_URL;
   const [timeLeft, setTimeLeft] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
 

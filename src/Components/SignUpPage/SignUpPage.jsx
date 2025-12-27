@@ -216,27 +216,20 @@ const SignupPage = () => {
     }
   };
 
-  // 🔐 Email verification screen - FIXED WITH PROPER STYLING
   if (showVerificationNotice) {
-    return (
-      <main className={styles.landingPage}>
-        {/* Background & Overlay */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={index}
-            className={styles.bgImage}
-            style={{
-              backgroundImage: `url(${backgroundImages[index]})`,
-            }}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
-        </AnimatePresence>
-        <div className={styles.overlay} />
+  return (
+    <main className={styles.landingPage}>
+      {/* Static background - no shuffling */}
+      <div
+        className={styles.bgImage}
+        style={{
+          backgroundImage: `url(${backgroundImages[index]})`,
+        }}
+      />
+      <div className={styles.overlay} />
 
-        <section className={styles.content}>
+      <section className={styles.content}>
+        <div className={styles.innerContent}>
           <header className={styles.header}>
             <Link to="/">
               <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
@@ -244,25 +237,41 @@ const SignupPage = () => {
           </header>
 
           <div className={styles.successSection}>
-            <h2 className={styles.heroTitle}>Account Created Successfully! 📬</h2>
+            <h2 className={styles.heroTitle}>
+              Account Created Successfully! 📬
+            </h2>
             <p className={styles.heroSubtitle}>
-              We've sent a verification email to <strong>{formData.email}</strong>.
-              <br />
-              Please check your inbox (and spam folder) to verify your account.
+              We've sent a verification email to<br />
+              <strong>{formData.email}</strong>.
               <br /><br />
-              Thank you for joining EcoSphere! Let's make the world greener together. 🌱
+              Please check your inbox (and spam/junk folder) to verify your account.
+              <br /><br />
+              Thank you for joining EcoSphere!<br />
+              Let's make the world greener together. 🌱
             </p>
+
             <Link to="/login" className={styles.btnPrimary}>
               Go to Login
             </Link>
-            <div className={styles.loginRedirect}>
-              <p>Didn't receive the email? <Link to="/login" className={styles.loginLink}>Resend</Link></p>
+
+            <div className={styles.resendSection}>
+              <p>
+                Didn't receive the email?{" "}
+                <button
+                  type="button"
+                  onClick={() => alert("Resend feature can be implemented here")}
+                  className={styles.resendLink}
+                >
+                  Resend verification email
+                </button>
+              </p>
             </div>
           </div>
-        </section>
-      </main>
-    );
-  }
+        </div>
+      </section>
+    </main>
+  );
+}
 
   return (
     <main className={styles.landingPage}>
