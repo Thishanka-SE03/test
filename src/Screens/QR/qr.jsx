@@ -3,8 +3,10 @@ import React, { useEffect, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const QRScannerPage = () => {
+  const scanLock = useRef(false);
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -27,25 +29,40 @@ const QRScannerPage = () => {
     );
 
     const onScanSuccess = async (decodedText) => {
+      // 🔒 HARD LOCK — prevents duplicate scans
+      if (scanLock.current) return;
+      scanLock.current = true;
+
       try {
         const clean = decodedText.trim();
-
         let binId = null;
 
         // Accept formats: "BIN:3", "SMARTBIN:3", "3"
         if (clean.includes(":")) {
-          const parts = clean.split(":");
-          binId = parts[1];
+          binId = clean.split(":")[1];
         } else if (/^\d+$/.test(clean)) {
           binId = clean;
         }
 
         if (!binId) {
-          alert("Invalid Smart Bin QR");
-          return;
+          throw new Error("Invalid Smart Bin QR");
         }
 
-        // Save session locally
+        // Notify Node bridge FIRST
+        const res = await fetch(`${BRIDGE_URL}/start-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenId: user.id,
+            binId,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to start session");
+        }
+
+        // Save session locally AFTER backend success
         localStorage.setItem(
           "activeBinSession",
           JSON.stringify({
@@ -55,27 +72,20 @@ const QRScannerPage = () => {
           })
         );
 
-        // Notify Node bridge
-        await fetch(`${BRIDGE_URL}/start-session`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            citizenId: user.id,
-            binId,
-          }),
-        });
+        // Stop scanner cleanly
+        await scanner.clear();
 
-        scanner.clear();
-        setIsScanning(false); // unmount scanner
+        setIsScanning(false);
         setShouldRedirect(true);
       } catch (err) {
         console.error(err);
-        alert("Invalid Smart Bin QR");
+        scanLock.current = false; // 🔓 allow retry
+        alert("Invalid or already active Smart Bin QR");
       }
     };
 
     const onScanFailure = () => {
-      // Silently handle scan failures (common during scanning)
+      // silent (expected during scanning)
     };
 
     scanner.render(onScanSuccess, onScanFailure);
@@ -84,11 +94,12 @@ const QRScannerPage = () => {
       scanner.clear().catch(() => {});
     };
   }, [isScanning]);
+
   useEffect(() => {
     if (shouldRedirect) {
-      window.location.href = "/dashboard";
+      window.location.replace("/dashboard");
     }
-  }, [shouldRedirect, navigate]);
+  }, [shouldRedirect]);
 
   const handleRestart = () => {
     setScanResult(null);
