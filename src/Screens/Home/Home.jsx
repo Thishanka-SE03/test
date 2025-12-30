@@ -14,7 +14,12 @@ import Styles from "./styles/HomeStyles";
 import useCitizenTree from "/src/hooks/useCitizenTree.jsx";
 import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { Navigate, useLocation } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
@@ -279,6 +284,7 @@ const RealisticTree = ({ points }) => {
 export default function EcoApp() {
   const { user, loading: authLoading } = useAuth();
   const citizenId = user?.id;
+  const navigate = useNavigate();
 
   const { treeLevel, loading } = useCitizenTree(citizenId);
   const [session, setSession] = useState(null);
@@ -405,6 +411,10 @@ export default function EcoApp() {
 
   const points = Math.min(100, Math.max(0, treeLevel));
   const currentStageIndex = Math.min(7, Math.floor(points / 12.5));
+  const STAGE_SIZE = 100 / 8; // 12.5
+  const nextStageAt = Math.min(100, (currentStageIndex + 1) * STAGE_SIZE);
+  const pointsToNextStage = points >= 100 ? 0 : Math.ceil(nextStageAt - points);
+
   return (
     <div className="page-container">
       <Styles />
@@ -491,6 +501,48 @@ export default function EcoApp() {
               <div style={{ fontSize: "0.9rem", opacity: 0.6 }}>
                 Tree Level {treeLevel} / 100
               </div>
+
+              {points < 100 && (
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontSize: "0.8rem",
+                    color: "#34d399",
+                    fontWeight: 500,
+                  }}
+                >
+                  🌱 {pointsToNextStage} points away from next stage
+                </div>
+              )}
+              {!session && (
+                <div style={{ marginTop: "20px", textAlign: "center" }}>
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      fontSize: "0.85rem",
+                      color: "#34d399",
+                      fontWeight: 500,
+                      textAlign: "center",
+                    }}
+                  >
+                    ♻️ Press <strong>Scan</strong> below to add waste and earn
+                    eco points
+                  </div>
+                </div>
+              )}
+
+              {points === 100 && (
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontSize: "0.8rem",
+                    color: "#22c55e",
+                    fontWeight: 600,
+                  }}
+                >
+                  🌳 Tree fully grown!
+                </div>
+              )}
             </div>
           </section>
 

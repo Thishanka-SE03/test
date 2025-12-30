@@ -51,7 +51,6 @@ export const submitGarbageReport = async ({
     const { error: insertError } = await supabase
       .from('illegalwastereport')
       .insert({
-        location: null, // You could compute reverse geocoding if needed later
         description: description.trim(),
         dateposted: today,
         imageurl: imageUrl,

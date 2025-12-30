@@ -29,7 +29,6 @@ const QRScannerPage = () => {
     );
 
     const onScanSuccess = async (decodedText) => {
-      // 🔒 HARD LOCK — prevents duplicate scans
       if (scanLock.current) return;
       scanLock.current = true;
 
@@ -37,18 +36,25 @@ const QRScannerPage = () => {
         const clean = decodedText.trim();
         let binId = null;
 
-        // Accept formats: "BIN:3", "SMARTBIN:3", "3"
         if (clean.includes(":")) {
           binId = clean.split(":")[1];
         } else if (/^\d+$/.test(clean)) {
           binId = clean;
         }
 
-        if (!binId) {
-          throw new Error("Invalid Smart Bin QR");
+        if (!binId) throw new Error("INVALID_QR");
+
+        // 🔍 Check bin status first
+        const statusRes = await fetch(`${BRIDGE_URL}/session-status/${binId}`);
+        const status = await statusRes.json();
+
+        if (status.active) {
+          alert("🚫 This Smart Bin is currently in use.");
+          scanLock.current = false;
+          return;
         }
 
-        // Notify Node bridge FIRST
+        // 🚀 Start session
         const res = await fetch(`${BRIDGE_URL}/start-session`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -58,11 +64,15 @@ const QRScannerPage = () => {
           }),
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to start session");
+        if (res.status === 409) {
+          alert("🚫 This Smart Bin is already active.");
+          scanLock.current = false;
+          return;
         }
 
-        // Save session locally AFTER backend success
+        if (!res.ok) throw new Error("START_FAILED");
+
+        // ✅ Save locally AFTER success
         localStorage.setItem(
           "activeBinSession",
           JSON.stringify({
@@ -72,15 +82,13 @@ const QRScannerPage = () => {
           })
         );
 
-        // Stop scanner cleanly
         await scanner.clear();
-
         setIsScanning(false);
         setShouldRedirect(true);
       } catch (err) {
         console.error(err);
-        scanLock.current = false; // 🔓 allow retry
-        alert("Invalid or already active Smart Bin QR");
+        scanLock.current = false;
+        alert("❌ Invalid or unavailable Smart Bin QR");
       }
     };
 
