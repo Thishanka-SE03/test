@@ -44,16 +44,6 @@ const QRScannerPage = () => {
 
         if (!binId) throw new Error("INVALID_QR");
 
-        // 🔍 Check bin status first
-        const statusRes = await fetch(`${BRIDGE_URL}/session-status/${binId}`);
-        const status = await statusRes.json();
-
-        if (status.active) {
-          alert("🚫 This Smart Bin is currently in use.");
-          scanLock.current = false;
-          return;
-        }
-
         // 🚀 Start session
         const res = await fetch(`${BRIDGE_URL}/start-session`, {
           method: "POST",
@@ -64,9 +54,11 @@ const QRScannerPage = () => {
           }),
         });
 
-        if (res.status === 409) {
-          alert("🚫 This Smart Bin is already active.");
+        const data = await res.json();
+
+        if (!res.ok) {
           scanLock.current = false;
+          alert(data.error || "🚫 Smart Bin unavailable");
           return;
         }
 
