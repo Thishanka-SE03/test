@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,83 +6,76 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-} from 'react-native-web';
-import { Leaf, Gift } from 'lucide-react';
-import { styles, responsiveHelpers } from './styles/styles';
-import { supabase } from '../../lib/supabaseClient';
+  Modal,
+} from "react-native-web";
+import { Leaf, Gift, Copy, Check } from "lucide-react";
+import { styles, responsiveHelpers } from "./styles/styles";
+import { rewardsService } from "./Service/rewardsService";
 
 const { isWeb, isSmallDevice } = responsiveHelpers;
 
-// Hard-coded rewards (you can move these to DB later if needed)
 const rewards = [
-  { title: 'THE PALMS', points: 100, off: '30%', category: 'Loyalty' },
-  { title: 'Tranquilisle', points: 200, off: '20%', category: 'Loyalty' },
-  { title: 'Beauty & Wellness', points: 150, off: '15%', category: 'Beauty & Wellness' },
-  { title: 'Clothing & Accessories', points: 150, off: '15%', category: 'Clothing' },
-  { title: 'Dining', points: 100, off: '40%', category: 'Dining' },
-  { title: 'Eco Store', points: 80, off: '10%', category: 'Sustainability' },
-  { title: 'Green Cafe', points: 120, off: '12%', category: 'Dining' },
-  { title: 'Plant Shop', points: 90, off: '30%', category: 'Gardening' },
+  { title: "THE PALMS", points: 100, off: "30%", category: "Loyalty" },
+  { title: "Tranquilisle", points: 200, off: "20%", category: "Loyalty" },
+  { title: "Beauty & Wellness",points: 150,off: "15%",category: "Beauty & Wellness",},
+  { title: "Clothing & Accessories",points: 150,off: "15%",category: "Clothing",},
+  { title: "Dining", points: 100, off: "40%", category: "Dining" },
+  { title: "Eco Store", points: 80, off: "10%", category: "Sustainability" },
+  { title: "Green Cafe", points: 120, off: "12%", category: "Dining" },
+  { title: "Plant Shop", points: 90, off: "30%", category: "Gardening" },
 ];
 
 const tiers = [
-  { name: 'SILVER', minPoints: 0, accentColor: '#AAA9AD' },
-  { name: 'GOLD', minPoints: 1000, accentColor: '#D4AF37' },
-  { name: 'PLATINUM', minPoints: 2000, accentColor: '#4682B4' },
-  { name: 'DIAMOND', minPoints: 4000, accentColor: '#50C878' },
+  { name: "SILVER", minPoints: 0, accentColor: "#AAA9AD" },
+  { name: "GOLD", minPoints: 1000, accentColor: "#D4AF37" },
+  { name: "PLATINUM", minPoints: 2000, accentColor: "#4682B4" },
+  { name: "DIAMOND", minPoints: 3000, accentColor: "#50C878" },
 ];
 
 const Redeem = () => {
-  const [currentPoints, setCurrentPoints] = useState(null); // null = loading
+  const [currentPoints, setCurrentPoints] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch user's points on mount
+  // Modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [redeemCode, setRedeemCode] = useState("");
+  const [rewardTitle, setRewardTitle] = useState("");
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
-    const fetchPoints = async () => {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
-          throw new Error('User not authenticated');
+    let subscription = null;
+
+    const initialize = async () => {
+      setLoading(true);
+      subscription = await rewardsService.setupPointsListener(
+        (points) => {
+          setCurrentPoints(points);
+          setLoading(false);
+        },
+        (err) => {
+          console.error("Points setup error:", err);
+          Alert.alert("Error", "Failed to load your points.");
+          setCurrentPoints(0);
+          setLoading(false);
         }
-
-        const { data, error } = await supabase
-          .from('citizen')
-          .select('totalpoints')
-          .eq('citizenid', user.id)
-          .single();
-
-        if (error) throw error;
-
-        setCurrentPoints(data.totalpoints || 0);
-      } catch (err) {
-        console.error('Error fetching points:', err);
-        setError(err.message);
-        Alert.alert('Error', 'Failed to load your points. Please try again.');
-        setCurrentPoints(0); // fallback
-      } finally {
-        setLoading(false);
-      }
+      );
     };
 
-    fetchPoints();
+    initialize();
+
+    return () => {
+      rewardsService.removeSubscription(subscription);
+    };
   }, []);
 
-  // Calculate tier info
-  const {
-    currentTierName,
-    nextTier,
-    pointsNeeded,
-    accentColor,
-    textColor,
-  } = useMemo(() => {
+  const tierInfo = useMemo(() => {
     if (currentPoints === null) {
       return {
-        currentTierName: 'SILVER',
-        nextTier: 'GOLD',
+        currentTierName: "SILVER",
+        nextTier: "GOLD",
         pointsNeeded: 1000,
-        accentColor: '#AAA9AD',
-        textColor: '#333333',
+        accentColor: "#AAA9AD",
+        isHighestTier: false,
       };
     }
 
@@ -101,72 +94,67 @@ const Redeem = () => {
       }
     }
 
+    const isHighestTier = currentPoints >= 4000;
+
     return {
       currentTierName: current.name,
-      nextTier: next ? next.name : null,
+      nextTier: next?.name || null,
       pointsNeeded: needed,
       accentColor: current.accentColor,
-      textColor: '#333333',
+      isHighestTier,
     };
   }, [currentPoints]);
 
-  const progress = currentPoints !== null
-    ? (currentPoints / tiers[tiers.length - 1].minPoints) * 100
-    : 0;
-
-  // Handle redemption with DB update
-  const handleRedeem = async (item) => {
-    if (currentPoints < item.points) {
-      Alert.alert(
-        'Insufficient Points',
-        `You need ${item.points} points to redeem "${item.title}".\nYou have ${currentPoints} points.`
-      );
-      return;
-    }
-
-    // Optimistic UI update
-    const newPoints = currentPoints - item.points;
-    setCurrentPoints(newPoints);
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await supabase
-        .from('citizen')
-        .update({ totalpoints: newPoints })
-        .eq('citizenid', user.id);
-
-      if (error) throw error;
-
-      Alert.alert(
-        'Redeemed Successfully! ✨',
-        `"${item.title}" redeemed for ${item.points} points!\nRemaining: ${newPoints} points`
-      );
-    } catch (err) {
-      console.error('Redemption failed:', err);
-      // Revert on failure
-      setCurrentPoints(currentPoints);
-      Alert.alert('Redemption Failed', 'Could not update points. Please try again.');
-    }
-  };
+  const progress =
+    currentPoints !== null ? Math.min((currentPoints / 4000) * 100, 100) : 0;
 
   const dynamicStyles = {
-    currentTierText: { color: accentColor },
-    thanksText: { color: textColor },
-    nextTierText: { color: textColor },
-    boldText: { color: accentColor },
-    progressFill: { backgroundColor: accentColor },
-    pointsText: { color: accentColor },
-    balanceText: { color: accentColor },
-    activeLevelText: { color: accentColor },
-    activeDot: { backgroundColor: accentColor },
+    currentTierText: { color: tierInfo.accentColor },
+    thanksText: { color: "#333333" },
+    nextTierText: { color: "#333333" },
+    boldText: { color: tierInfo.accentColor },
+    progressFill: { backgroundColor: tierInfo.accentColor },
+    pointsText: { color: tierInfo.accentColor },
+    balanceText: { color: tierInfo.accentColor },
+    activeLevelText: { color: tierInfo.accentColor },
+    activeDot: { backgroundColor: tierInfo.accentColor },
+  };
+
+  const handleRedeem = async (item) => {
+    rewardsService.redeemReward(
+      item,
+      currentPoints,
+      ({ newPoints, code, title }) => {
+        // Optimistic success
+        setCurrentPoints(newPoints);
+        setRedeemCode(code);
+        setRewardTitle(title);
+        setModalVisible(true);
+        setCopied(false);
+      },
+      (err) => {
+        Alert.alert(
+          "Redemption Failed",
+          err.message || "Something went wrong. Please try again."
+        );
+      }
+    );
+  };
+
+  const copyToClipboard = () => {
+    if (navigator.clipboard && redeemCode) {
+      navigator.clipboard.writeText(redeemCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Text>Loading your rewards...</Text>
         </View>
       </SafeAreaView>
@@ -178,7 +166,7 @@ const Redeem = () => {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          isWeb && { maxWidth: 'auto', marginHorizontal: 'auto' },
+          isWeb && { maxWidth: "auto", marginHorizontal: "auto" },
         ]}
       >
         {/* Header */}
@@ -196,7 +184,7 @@ const Redeem = () => {
           </View>
 
           <Text style={[styles.currentTier, dynamicStyles.currentTierText]}>
-            {currentTierName.toUpperCase()} MEMBER
+            {tierInfo.currentTierName.toUpperCase()} MEMBER
           </Text>
 
           <View style={styles.levelsContainer}>
@@ -205,12 +193,15 @@ const Redeem = () => {
                 <Text
                   style={[
                     styles.levelText,
-                    currentTierName === tier.name && [styles.activeLevelText, dynamicStyles.activeLevelText],
+                    tierInfo.currentTierName === tier.name && [
+                      styles.activeLevelText,
+                      dynamicStyles.activeLevelText,
+                    ],
                   ]}
                 >
                   {tier.name}
                 </Text>
-                {currentTierName === tier.name && (
+                {tierInfo.currentTierName === tier.name && (
                   <View style={[styles.activeDot, dynamicStyles.activeDot]} />
                 )}
               </View>
@@ -220,25 +211,34 @@ const Redeem = () => {
           <View style={styles.progressContainer}>
             <View style={styles.progressBackground}>
               <View
-                style={[styles.progressFill, dynamicStyles.progressFill, { width: `${progress}%` }]}
+                style={[
+                  styles.progressFill,
+                  dynamicStyles.progressFill,
+                  { width: `${progress}%` },
+                ]}
               />
             </View>
             <View style={styles.progressLabels}>
               <Text style={styles.progressText}>{currentPoints ?? 0}</Text>
-              <Text style={styles.progressText}>{tiers[tiers.length - 1].minPoints}</Text>
+              <Text style={styles.progressText}>4000</Text>
             </View>
           </View>
 
-          {nextTier ? (
+          {tierInfo.isHighestTier ? (
             <Text style={[styles.nextTierText, dynamicStyles.nextTierText]}>
-              <Text style={dynamicStyles.boldText}>{pointsNeeded}</Text> more points to{' '}
-              <Text style={dynamicStyles.boldText}>{nextTier}</Text> tier!
+              <Text style={dynamicStyles.boldText}>Congratulations!</Text>{" "}
+              You've reached the highest tier! ✨
             </Text>
-          ) : (
+          ) : tierInfo.nextTier ? (
             <Text style={[styles.nextTierText, dynamicStyles.nextTierText]}>
-              <Text style={dynamicStyles.boldText}>Congratulations!</Text> You've reached Diamond ✨
+              <Text style={dynamicStyles.boldText}>
+                {tierInfo.pointsNeeded}
+              </Text>{" "}
+              more points to{" "}
+              <Text style={dynamicStyles.boldText}>{tierInfo.nextTier}</Text>{" "}
+              tier!
             </Text>
-          )}
+          ) : null}
 
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
@@ -254,11 +254,11 @@ const Redeem = () => {
           </View>
         </View>
 
-        {/* Rewards Section */}
+        {/* Rewards Grid */}
         <View style={styles.rewardsSection}>
           <Text style={styles.sectionTitle}>
-            <Gift color={accentColor} size={isSmallDevice ? 20 : 24} />
-            {'  '}Redeem Exclusive Rewards
+            <Gift color={tierInfo.accentColor} size={isSmallDevice ? 20 : 24} />
+            {"  "}Redeem Exclusive Rewards
           </Text>
 
           <View style={styles.grid}>
@@ -274,14 +274,16 @@ const Redeem = () => {
                 disabled={currentPoints < item.points}
               >
                 <View style={styles.rewardTop}>
-                  <Text style={styles.rewardCategoryBadge}>{item.category}</Text>
+                  <Text style={styles.rewardCategoryBadge}>
+                    {item.category}
+                  </Text>
                   <Text style={styles.discountText}>{item.off}</Text>
                 </View>
                 <Text style={styles.rewardTitle} numberOfLines={2}>
                   {item.title}
                 </Text>
                 <View style={styles.pointsBadge}>
-                  <Leaf color={accentColor} size={16} />
+                  <Leaf color={tierInfo.accentColor} size={16} />
                   <Text style={[styles.pointsText, dynamicStyles.pointsText]}>
                     {item.points} POINTS
                   </Text>
@@ -291,6 +293,42 @@ const Redeem = () => {
           </View>
         </View>
       </ScrollView>
+
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalSuccessTitle}>
+              Redeemed Successfully! 🎉
+            </Text>
+            <Text style={styles.modalSubtitle}>You redeemed:</Text>
+            <Text style={styles.modalRewardTitle}>{rewardTitle}</Text>
+
+            <Text style={styles.modalCodeLabel}>Your unique redeem code:</Text>
+
+            <View style={styles.codeContainer}>
+              <Text style={styles.codeText}>{redeemCode}</Text>
+              <TouchableOpacity onPress={copyToClipboard}>
+                {copied ? (
+                  <Check color="#16a34a" size={32} />
+                ) : (
+                  <Copy color="#16a34a" size={32} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {copied && (
+              <Text style={styles.copiedText}>Copied to clipboard!</Text>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.doneButton}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
