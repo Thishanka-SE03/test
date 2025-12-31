@@ -95,8 +95,10 @@ const SignupPage = () => {
       return;
     }
 
-    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-    const mediumRegex = /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
+    const strongRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+    const mediumRegex =
+      /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
 
     if (strongRegex.test(password)) {
       setPasswordStrength("strong");
@@ -217,61 +219,49 @@ const SignupPage = () => {
   };
 
   if (showVerificationNotice) {
-  return (
-    <main className={styles.landingPage}>
-      {/* Static background - no shuffling */}
-      <div
-        className={styles.bgImage}
-        style={{
-          backgroundImage: `url(${backgroundImages[index]})`,
-        }}
-      />
-      <div className={styles.overlay} />
+    return (
+      <main className={styles.landingPage}>
+        {/* Static background - no shuffling */}
+        <div
+          className={styles.bgImage}
+          style={{
+            backgroundImage: `url(${backgroundImages[index]})`,
+          }}
+        />
+        <div className={styles.overlay} />
 
-      <section className={styles.content}>
-        <div className={styles.innerContent}>
-          <header className={styles.header}>
-            <Link to="/">
-              <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
-            </Link>
-          </header>
+        <section className={styles.content}>
+          <div className={styles.innerContent}>
+            <header className={styles.header}>
+              <Link to="/">
+                <img src={logo} alt="EcoSphere Logo" className={styles.logo} />
+              </Link>
+            </header>
 
-          <div className={styles.successSection}>
-            <h2 className={styles.heroTitle}>
-              Account Created Successfully! 📬
-            </h2>
-            <p className={styles.heroSubtitle}>
-              We've sent a verification email to<br />
-              <strong>{formData.email}</strong>.
-              <br /><br />
-              Please check your inbox (and spam/junk folder) to verify your account.
-              <br /><br />
-              Thank you for joining EcoSphere!<br />
-              Let's make the world greener together. 🌱
-            </p>
-
-            <Link to="/login" className={styles.btnPrimary}>
-              Go to Login
-            </Link>
-
-            <div className={styles.resendSection}>
-              <p>
-                Didn't receive the email?{" "}
-                <button
-                  type="button"
-                  onClick={() => alert("Resend feature can be implemented here")}
-                  className={styles.resendLink}
-                >
-                  Resend verification email
-                </button>
+            <div className={styles.successSection}>
+              <h2 className={styles.heroTitle}>
+                Account Created Successfully! 📬
+              </h2>
+              <p className={styles.heroSubtitle}>
+                We've sent a verification email to
+                <br />
+                <strong>{formData.email}</strong>.
+                <br />
+                <br />
+                Please check your inbox (and spam/junk folder) to verify your
+                account.
+                <br />
+                <br />
+                Thank you for joining EcoSphere!
+                <br />
+                Let's make the world greener together. 🌱
               </p>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
-  );
-}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.landingPage}>
@@ -329,11 +319,15 @@ const SignupPage = () => {
                   errors.fullName ? styles.inputError : ""
                 }`}
                 aria-invalid={!!errors.fullName}
-                aria-describedby={errors.fullName ? "fullName-error" : undefined}
+                aria-describedby={
+                  errors.fullName ? "fullName-error" : undefined
+                }
                 required
               />
               {errors.fullName && (
-                <span id="fullName-error" className={styles.errorText}>{errors.fullName}</span>
+                <span id="fullName-error" className={styles.errorText}>
+                  {errors.fullName}
+                </span>
               )}
             </div>
 
@@ -353,7 +347,9 @@ const SignupPage = () => {
                 required
               />
               {errors.email && (
-                <span id="email-error" className={styles.errorText}>{errors.email}</span>
+                <span id="email-error" className={styles.errorText}>
+                  {errors.email}
+                </span>
               )}
             </div>
 
@@ -369,11 +365,15 @@ const SignupPage = () => {
                   errors.username ? styles.inputError : ""
                 }`}
                 aria-invalid={!!errors.username}
-                aria-describedby={errors.username ? "username-error" : undefined}
+                aria-describedby={
+                  errors.username ? "username-error" : undefined
+                }
                 required
               />
               {errors.username && (
-                <span id="username-error" className={styles.errorText}>{errors.username}</span>
+                <span id="username-error" className={styles.errorText}>
+                  {errors.username}
+                </span>
               )}
             </div>
 
@@ -389,11 +389,15 @@ const SignupPage = () => {
                   errors.password ? styles.inputError : ""
                 } ${getPasswordStrengthClass()}`}
                 aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? "password-error" : undefined}
+                aria-describedby={
+                  errors.password ? "password-error" : undefined
+                }
                 required
               />
               {formData.password && (
-                <div className={`${styles.passwordStrength} ${styles[passwordStrength]}`}>
+                <div
+                  className={`${styles.passwordStrength} ${styles[passwordStrength]}`}
+                >
                   <span>{getPasswordStrengthText()}</span>
                   <div className={styles.strengthBar}>
                     <div className={styles.strengthFill}></div>
@@ -401,7 +405,9 @@ const SignupPage = () => {
                 </div>
               )}
               {errors.password && (
-                <span id="password-error" className={styles.errorText}>{errors.password}</span>
+                <span id="password-error" className={styles.errorText}>
+                  {errors.password}
+                </span>
               )}
             </div>
 
@@ -417,11 +423,15 @@ const SignupPage = () => {
                   errors.confirmPassword ? styles.inputError : ""
                 }`}
                 aria-invalid={!!errors.confirmPassword}
-                aria-describedby={errors.confirmPassword ? "confirm-error" : undefined}
+                aria-describedby={
+                  errors.confirmPassword ? "confirm-error" : undefined
+                }
                 required
               />
               {errors.confirmPassword && (
-                <span id="confirm-error" className={styles.errorText}>{errors.confirmPassword}</span>
+                <span id="confirm-error" className={styles.errorText}>
+                  {errors.confirmPassword}
+                </span>
               )}
             </div>
 
