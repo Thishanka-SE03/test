@@ -37,9 +37,7 @@ export const updateUserProfile = async ({
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
-      .from("profile-photos")
-      .getPublicUrl(path);
+    const { data } = supabase.storage.from("profile-photos").getPublicUrl(path);
 
     photoUrl = data.publicUrl;
   }
@@ -78,4 +76,25 @@ export const updateUserProfile = async ({
   }
 
   return photoUrl;
+};
+export const fetchTreeCount = async (userId) => {
+  if (!userId) return 0;
+
+  const { data, error } = await supabase
+    .from("treestatus")
+    .select("treecount")
+    .eq("citizenno", userId)
+    .single();
+
+  if (error) {
+    // Common cases: no row, table missing, wrong column, permission denied
+    if (error.code === "PGRST116") {
+      // No row found (single() expects exactly one)
+      return 0;
+    }
+    console.warn("Tree count fetch error:", error.message);
+    return 0;
+  }
+
+  return data?.treecount || 0;
 };

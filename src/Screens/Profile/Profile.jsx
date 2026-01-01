@@ -14,6 +14,7 @@ import { styles } from "./styles/ProfileStyles";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { fetchCitizenAddress, updateUserProfile } from "./Service/profileUtils";
+import { fetchTreeCount } from "./Service/profileUtils";
 import PopupModal from "./Service/PopupModal";
 
 const Profile = () => {
@@ -34,6 +35,7 @@ const Profile = () => {
   const [tempEmail, setTempEmail] = useState("");
   const [tempAddress, setTempAddress] = useState("");
   const [tempPhotoFile, setTempPhotoFile] = useState(null);
+  const [treeCount, setTreeCount] = useState(0);
 
   const [popup, setPopup] = useState({
     visible: false,
@@ -55,19 +57,31 @@ const Profile = () => {
       try {
         setLoading(true);
 
+        // Load basic user data
         setUsername(user.username || "");
         setEmail(user.email || "");
         setProfilePhoto(user.userphotopath || null);
         setOriginalPhoto(user.userphotopath || null);
 
+        // Load address (required)
         const citizenAddr = await fetchCitizenAddress(user.id);
         setAddress(citizenAddr);
+
+        let trees = 0;
+        try {
+          trees = await fetchTreeCount(user.id);
+        } catch (treeError) {
+          console.warn("Could not load tree count:", treeError);
+          trees = 0;
+        }
+        setTreeCount(trees);
 
         setTempUsername(user.username || "");
         setTempEmail(user.email || "");
         setTempAddress(citizenAddr);
-      } catch {
-        showPopup("Error", "Failed to load profile data");
+      } catch (err) {
+        console.error("Critical profile load error:", err);
+        showPopup("Error", "Failed to load profile data. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -260,17 +274,17 @@ const Profile = () => {
         <Text style={styles.sectionTitle}>Your Eco Impact</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Recycle size={32}  style={styles.icon}/>
+            <Recycle size={32} style={styles.icon} />
             <Text style={styles.statValue}>842</Text>
             <Text style={styles.statLabel}>Kg Recycled</Text>
           </View>
           <View style={styles.statCard}>
-            <Leaf size={32} style={styles.icon}/>
-            <Text style={styles.statValue}>67</Text>
+            <Leaf size={32} style={styles.icon} />
+            <Text style={styles.statValue}>{treeCount}</Text>
             <Text style={styles.statLabel}>Trees Saved</Text>
           </View>
           <View style={styles.statCard}>
-            <Trophy size={32}  style={styles.icon}/>
+            <Trophy size={32} style={styles.icon} />
             <Text style={styles.statValue}>Top 5%</Text>
             <Text style={styles.statLabel}>Leaderboard</Text>
           </View>
