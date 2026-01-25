@@ -27,7 +27,7 @@ import logo from "../../assets/images/logo.png";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
 );
 
 // --- Configuration ---
@@ -284,123 +284,139 @@ const RealisticTree = ({ points }) => {
 export default function EcoApp() {
   const { user, loading: authLoading } = useAuth();
   const citizenId = user?.id;
-  const navigate = useNavigate();
 
   const { treeLevel, loading } = useCitizenTree(citizenId);
+
   const [session, setSession] = useState(null);
-  const [lastTreeLevel, setLastTreeLevel] = useState(null);
-  const [celebrate, setCelebrate] = useState(false);
-  const location = useLocation();
-  const [itemToast, setItemToast] = useState(false);
-  const { width, height } = useWindowSize();
-  const BRIDGE_URL = import.meta.env.VITE_BRIDGE_URL;
   const [timeLeft, setTimeLeft] = useState(null);
+  const [lastTreeLevel, setLastTreeLevel] = useState(null);
+  const [itemToast, setItemToast] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
 
-  // Load session from localStorage on mount
+  const { width, height } = useWindowSize();
+  // -----------------------------
+  // LOAD ACTIVE SESSION FROM DB
+  // -----------------------------
   useEffect(() => {
-    const saved = localStorage.getItem("activeBinSession");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setSession(parsed);
-    }
-  }, []);
+    if (!citizenId) return;
 
-  // Timer countdown logic
+    const fetchSession = async () => {
+      const { data } = await supabase
+        .from("bin_sessions")
+        .select("*")
+        .eq("citizen_id", citizenId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (data) {
+        setSession({
+          id: data.session_id,
+          binId: data.bin_id,
+          citizenId: data.citizen_id,
+          started_at: data.started_at,
+        });
+
+        // ⏱ initialize timer ONCE when session appears
+        setTimeLeft(SESSION_DURATION_MS);
+      } else {
+        setSession(null);
+        setTimeLeft(null);
+      }
+    };
+
+    fetchSession();
+
+    const channel = supabase
+      .channel("bin-session-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bin_sessions",
+          filter: `citizen_id=eq.${citizenId}`,
+        },
+        fetchSession,
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [citizenId]);
+  // -----------------------------
+  // SESSION COUNTDOWN (UI ONLY)
+  // -----------------------------
   useEffect(() => {
-    if (!session?.startedAt) {
-      setTimeLeft(null);
-      return;
-    }
+    if (!session || timeLeft === null) return;
 
     const interval = setInterval(() => {
-      const elapsed = Date.now() - session.startedAt;
-      const remaining = SESSION_DURATION_MS - elapsed;
-
-      if (remaining <= 0) {
-        clearInterval(interval);
-        handleAutoEnd();
-      } else {
-        setTimeLeft(remaining);
-      }
+      setTimeLeft((prev) => {
+        if (prev <= 1000) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1000;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session?.startedAt]); // ← Only re-run when startedAt changes (critical for reset)
-
-  // Detect item added (treeLevel increase) → show toast + RESET TIMER
+  }, [session, timeLeft]);
+  // -----------------------------
+  // ITEM TOAST + TIMER RESET
+  // -----------------------------
   useEffect(() => {
     if (treeLevel === null) return;
 
     if (lastTreeLevel !== null && treeLevel > lastTreeLevel && session) {
-      // Show toast
+      // ✅ Toast
       setItemToast(true);
       setTimeout(() => setItemToast(false), 2000);
 
-      // 🔥 RESET TIMER: Update session with new start time
-      const newSession = {
-        ...session,
-        startedAt: Date.now(), // This resets the countdown to full duration
-      };
-      setSession(newSession);
-
-      // Also update localStorage so it persists across refreshes
-      localStorage.setItem("activeBinSession", JSON.stringify(newSession));
+      // 🔥 RESET TIMER HERE (NO DB, NO LATENCY)
+      setTimeLeft(SESSION_DURATION_MS);
     }
 
     setLastTreeLevel(treeLevel);
   }, [treeLevel, session, lastTreeLevel]);
 
-  // Celebration when tree is complete
+  // -----------------------------
+  // TREE COMPLETE CELEBRATION
+  // -----------------------------
   useEffect(() => {
-    if (treeLevel === 100 && session && !celebrate) {
+    if (treeLevel === 100 && !celebrate) {
       setCelebrate(true);
 
       supabase.rpc("complete_tree_if_ready", {
         p_citizen: citizenId,
       });
 
-      setTimeout(() => setCelebrate(false), 4000);
+      setTimeout(() => setCelebrate(false), 5000);
     }
-  }, [treeLevel, session, celebrate]);
+  }, [treeLevel]);
 
-  // Manual stop session
+  // -----------------------------
+  // END SESSION (FRONTEND REQUEST)
+  // -----------------------------
   const stopSession = async () => {
-    try {
-      await fetch(`${BRIDGE_URL}/end-session`, { method: "POST" });
-    } catch (err) {
-      console.error("Failed to end session", err);
-    }
+    if (!session) return;
 
-    localStorage.removeItem("activeBinSession");
+    await supabase
+      .from("bin_sessions")
+      .update({
+        status: "ended",
+        ended_at: new Date().toISOString(),
+      })
+      .eq("session_id", session.id);
+
     setSession(null);
     setTimeLeft(null);
-
-    // 🎉 Show thank you message
     setShowThankYou(true);
     setTimeout(() => setShowThankYou(false), 5000);
   };
 
-  // Auto-end on timeout
-  const handleAutoEnd = async () => {
-    console.log("⏱ Session expired");
-
-    try {
-      await fetch(`${BRIDGE_URL}/end-session`, { method: "POST" });
-    } catch (err) {
-      console.error("Failed to auto-end session", err);
-    }
-
-    localStorage.removeItem("activeBinSession");
-    setSession(null);
-    setTimeLeft(null);
-
-    // 🎉 Show thank you message
-    setShowThankYou(true);
-    setTimeout(() => setShowThankYou(false), 5000);
-  };
-
-  // Loading states...
+  // -----------------------------
+  // LOADING STATES
+  // -----------------------------
   if (authLoading) {
     return <div className="loading-screen">Authenticating… 🔐</div>;
   }
@@ -411,6 +427,7 @@ export default function EcoApp() {
 
   const points = Math.min(100, Math.max(0, treeLevel));
   const currentStageIndex = Math.min(7, Math.floor(points / 12.5));
+
   const STAGE_SIZE = 100 / 8; // 12.5
   const nextStageAt = Math.min(100, (currentStageIndex + 1) * STAGE_SIZE);
   const pointsToNextStage = points >= 100 ? 0 : Math.ceil(nextStageAt - points);
@@ -443,7 +460,7 @@ export default function EcoApp() {
                   ⏱ {Math.floor(timeLeft / 60000)}:
                   {String(Math.floor((timeLeft % 60000) / 1000)).padStart(
                     2,
-                    "0"
+                    "0",
                   )}
                 </strong>
               )}

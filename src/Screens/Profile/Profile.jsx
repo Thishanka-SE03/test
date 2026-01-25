@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native-web";
 import { Camera, Edit2, Check, X, Leaf, Recycle, Trophy } from "lucide-react";
 import { styles } from "./styles/ProfileStyles";
@@ -16,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchCitizenAddress, updateUserProfile } from "./Service/profileUtils";
 import { fetchTreeCount } from "./Service/profileUtils";
 import PopupModal from "./Service/PopupModal";
+import {SRI_LANKA_PROVINCES,getCouncilsForProvince,} from "./constant/councils"; 
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -30,10 +32,14 @@ const Profile = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [province, setProvince] = useState("");
+  const [council, setCouncil] = useState("");
 
   const [tempUsername, setTempUsername] = useState("");
   const [tempEmail, setTempEmail] = useState("");
   const [tempAddress, setTempAddress] = useState("");
+  const [tempProvince, setTempProvince] = useState("");
+  const [tempCouncil, setTempCouncil] = useState("");
   const [tempPhotoFile, setTempPhotoFile] = useState(null);
   const [treeCount, setTreeCount] = useState(0);
 
@@ -57,15 +63,16 @@ const Profile = () => {
       try {
         setLoading(true);
 
-        // Load basic user data
         setUsername(user.username || "");
         setEmail(user.email || "");
         setProfilePhoto(user.userphotopath || null);
         setOriginalPhoto(user.userphotopath || null);
 
-        // Load address (required)
-        const citizenAddr = await fetchCitizenAddress(user.id);
-        setAddress(citizenAddr);
+        const citizenData = await fetchCitizenAddress(user.id);
+
+        setAddress(citizenData.address || "");
+        setProvince(citizenData.province || "");
+        setCouncil(citizenData.council || "");
 
         let trees = 0;
         try {
@@ -78,7 +85,9 @@ const Profile = () => {
 
         setTempUsername(user.username || "");
         setTempEmail(user.email || "");
-        setTempAddress(citizenAddr);
+        setTempAddress(citizenData.address || "");
+        setTempProvince(citizenData.province || "");
+        setTempCouncil(citizenData.council || "");
       } catch (err) {
         console.error("Critical profile load error:", err);
         showPopup("Error", "Failed to load profile data. Please try again.");
@@ -114,6 +123,8 @@ const Profile = () => {
         username: tempUsername,
         email: tempEmail,
         address: tempAddress,
+        province: tempProvince,
+        council: tempCouncil,
         photoFile: tempPhotoFile,
         currentPhotoPath: originalPhoto,
       });
@@ -121,6 +132,8 @@ const Profile = () => {
       setUsername(tempUsername);
       setEmail(tempEmail);
       setAddress(tempAddress);
+      setProvince(tempProvince);
+      setCouncil(tempCouncil);
       setProfilePhoto(newPhotoUrl);
       setOriginalPhoto(newPhotoUrl);
       setTempPhotoFile(null);
@@ -138,6 +151,8 @@ const Profile = () => {
     setTempUsername(username);
     setTempEmail(email);
     setTempAddress(address);
+    setTempProvince(province);
+    setTempCouncil(council);
     setProfilePhoto(originalPhoto);
     setTempPhotoFile(null);
     setIsEditing(false);
@@ -155,9 +170,7 @@ const Profile = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#16a34a" />
         </View>
       </SafeAreaView>
@@ -170,7 +183,7 @@ const Profile = () => {
         <View style={styles.header}>
           <Text style={styles.title}>My Profile</Text>
           <Text style={styles.subtitle}>Manage your account</Text>
-          <br></br>
+          <br />
         </View>
 
         <View style={styles.photoContainer}>
@@ -182,10 +195,7 @@ const Profile = () => {
               style={styles.profileImage}
             />
             {isEditing && (
-              <TouchableOpacity
-                onPress={handlePhotoChange}
-                style={styles.cameraButton}
-              >
+              <TouchableOpacity onPress={handlePhotoChange} style={styles.cameraButton}>
                 <Camera color="white" size={20} />
               </TouchableOpacity>
             )}
@@ -256,9 +266,7 @@ const Profile = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.label}>Address</Text>
-            </View>
+            <Text style={styles.label}>Address</Text>
             <TextInput
               value={isEditing ? tempAddress : address}
               onChange={(e) => setTempAddress(e.target.value)}
@@ -268,6 +276,69 @@ const Profile = () => {
                 isEditing ? styles.inputEditing : styles.inputReadonly,
               ]}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Province</Text>
+            {isEditing ? (
+              <select
+                value={tempProvince}
+                onChange={(e) => {
+                  setTempProvince(e.target.value);
+                  setTempCouncil(""); 
+                }}
+                style={StyleSheet.flatten([
+                  styles.input,
+                  isEditing ? styles.inputEditing : styles.inputReadonly,
+                ])}
+              >
+                <option value="">Select Province</option>
+                {SRI_LANKA_PROVINCES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <TextInput
+                value={province || "Not specified"}
+                editable={false}
+                style={[styles.input, styles.inputReadonly]}
+              />
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Local Council / Authority</Text>
+            {isEditing ? (
+              <select
+                value={tempCouncil}
+                onChange={(e) => setTempCouncil(e.target.value)}
+                disabled={!tempProvince}
+                style={StyleSheet.flatten([
+                  styles.input,
+                  isEditing ? styles.inputEditing : styles.inputReadonly,
+                ])}
+              >
+                <option value="">Select Council</option>
+                {tempProvince &&
+                  getCouncilsForProvince(tempProvince).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                {tempProvince && getCouncilsForProvince(tempProvince).length === 0 && (
+                  <option value="Other">Other / Not Listed</option>
+                )}
+                {!tempProvince && <option value="">— Select province first —</option>}
+              </select>
+            ) : (
+              <TextInput
+                value={council || "Not specified"}
+                editable={false}
+                style={[styles.input, styles.inputReadonly]}
+              />
+            )}
           </View>
         </View>
 

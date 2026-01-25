@@ -1,16 +1,24 @@
 import { supabase } from "../../../lib/supabaseClient";
 
 export const fetchCitizenAddress = async (userId) => {
-  if (!userId) return "";
+  if (!userId) return { address: '', province: '', nearestcouncil: '' };
 
   const { data, error } = await supabase
     .from("citizen")
-    .select("address")
+    .select("address, province, nearestcouncil")  // ← Fixed column name
     .eq("citizenid", userId)
     .single();
 
-  if (error) return "";
-  return data?.address || "";
+  if (error || !data) {
+    console.warn("fetchCitizenAddress no data/error:", error?.message);
+    return { address: '', province: '', nearestcouncil: '' };  // ← Return empty object
+  }
+  
+  return {
+    address: data.address || '',
+    province: data.province || '',
+    council: data.nearestcouncil || ''  // ← Map to 'council' for frontend
+  };
 };
 
 export const updateUserProfile = async ({
@@ -18,6 +26,8 @@ export const updateUserProfile = async ({
   username,
   email,
   address,
+  province,        // ← NEW
+  council,         // ← NEW (maps to nearestcouncil)
   photoFile,
   currentPhotoPath,
 }) => {
@@ -38,10 +48,10 @@ export const updateUserProfile = async ({
     if (uploadError) throw uploadError;
 
     const { data } = supabase.storage.from("profile-photos").getPublicUrl(path);
-
     photoUrl = data.publicUrl;
   }
 
+  // Update users table (username, email, photo)
   const { error: userError } = await supabase
     .from("users")
     .update({
@@ -53,30 +63,41 @@ export const updateUserProfile = async ({
 
   if (userError) throw userError;
 
+  // Check if citizen exists
   const { data: citizen } = await supabase
     .from("citizen")
-    .select("citizenid")
+    .select("id")
     .eq("citizenid", userId)
     .single();
 
   if (!citizen) {
+    // INSERT new citizen with ALL fields
     const { error } = await supabase.from("citizen").insert({
       citizenid: userId,
       fullname: username.trim(),
       address: address?.trim() || null,
+      province: province?.trim() || null,           // ← NEW
+      nearestcouncil: council?.trim() || null,      // ← NEW (your schema column)
       totalpoints: 0,
     });
     if (error) throw error;
   } else {
+    // UPDATE existing citizen with ALL fields
     const { error } = await supabase
       .from("citizen")
-      .update({ address: address?.trim() || null })
+      .update({ 
+        fullname: username.trim(),
+        address: address?.trim() || null,
+        province: province?.trim() || null,           // ← NEW
+        nearestcouncil: council?.trim() || null,      // ← NEW
+      })
       .eq("citizenid", userId);
     if (error) throw error;
   }
 
   return photoUrl;
 };
+
 export const fetchTreeCount = async (userId) => {
   if (!userId) return 0;
 
@@ -87,11 +108,7 @@ export const fetchTreeCount = async (userId) => {
     .single();
 
   if (error) {
-    // Common cases: no row, table missing, wrong column, permission denied
-    if (error.code === "PGRST116") {
-      // No row found (single() expects exactly one)
-      return 0;
-    }
+    if (error.code === "PGRST116") return 0;
     console.warn("Tree count fetch error:", error.message);
     return 0;
   }

@@ -1,19 +1,17 @@
 // QRScannerPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { supabase } from "../../lib/supabaseClient";
 
 const QRScannerPage = () => {
   const scanLock = useRef(false);
-  const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  const BRIDGE_URL = import.meta.env.VITE_BRIDGE_URL;
 
   const { user } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     if (!isScanning) return;
 
@@ -22,10 +20,8 @@ const QRScannerPage = () => {
       {
         fps: 10,
         qrbox: { width: 280, height: 280 },
-        aspectRatio: 1,
-        supportedScanTypes: [0],
       },
-      false
+      false,
     );
 
     const onScanSuccess = async (decodedText) => {
@@ -36,6 +32,7 @@ const QRScannerPage = () => {
         const clean = decodedText.trim();
         let binId = null;
 
+        // Accept: "BIN:4", "SMARTBIN:4", "4"
         if (clean.includes(":")) {
           binId = clean.split(":")[1];
         } else if (/^\d+$/.test(clean)) {
@@ -44,39 +41,47 @@ const QRScannerPage = () => {
 
         if (!binId) throw new Error("INVALID_QR");
 
-        // 🚀 Start session
-        const res = await fetch(`${BRIDGE_URL}/start-session`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            citizenId: user.id,
-            binId,
-          }),
-        });
+        // 🔍 Check if bin already has active session
+        const { data: existing, error: checkErr } = await supabase
+          .from("bin_sessions")
+          .select("session_id")
+          .eq("bin_id", binId)
+          .eq("status", "active")
+          .maybeSingle();
 
-        const data = await res.json();
-
-        if (!res.ok) {
+        if (existing) {
+          alert("🚫 This Smart Bin is currently in use");
           scanLock.current = false;
-          alert(data.error || "🚫 Smart Bin unavailable");
           return;
         }
 
-        if (!res.ok) throw new Error("START_FAILED");
+        // 🚀 Start session (DB insert)
+        const { error } = await supabase.from("bin_sessions").insert({
+          bin_id: binId,
+          citizen_id: user.id,
+          status: "active",
+        });
 
-        // ✅ Save locally AFTER success
+        if (error) {
+          console.error(error);
+          throw new Error("SESSION_CREATE_FAILED");
+        }
+
+        // Optional local marker (UI only)
         localStorage.setItem(
           "activeBinSession",
           JSON.stringify({
             binId,
             citizenId: user.id,
             startedAt: Date.now(),
-          })
+          }),
         );
 
         await scanner.clear();
         setIsScanning(false);
-        setShouldRedirect(true);
+
+        // Redirect to dashboard
+        navigate("/dashboard");
       } catch (err) {
         console.error(err);
         scanLock.current = false;
@@ -84,28 +89,12 @@ const QRScannerPage = () => {
       }
     };
 
-    const onScanFailure = () => {
-      // silent (expected during scanning)
-    };
-
-    scanner.render(onScanSuccess, onScanFailure);
+    scanner.render(onScanSuccess, () => {});
 
     return () => {
       scanner.clear().catch(() => {});
     };
-  }, [isScanning]);
-
-  useEffect(() => {
-    if (shouldRedirect) {
-      window.location.replace("/dashboard");
-    }
-  }, [shouldRedirect]);
-
-  const handleRestart = () => {
-    setScanResult(null);
-    setIsScanning(true);
-  };
-
+  }, [isScanning, user, navigate]);
   return (
     <div className="page">
       <div className="scanner-container">
