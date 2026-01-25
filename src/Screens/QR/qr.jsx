@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabaseClient";
 const QRScannerPage = () => {
   const scanLock = useRef(false);
   const [isScanning, setIsScanning] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -76,12 +77,13 @@ const QRScannerPage = () => {
             startedAt: Date.now(),
           }),
         );
-
+        // after successful DB insert
         await scanner.clear();
         setIsScanning(false);
+        setShouldRedirect(true);
 
         // Redirect to dashboard
-        navigate("/dashboard");
+        window.location.replace("/dashboard");
       } catch (err) {
         console.error(err);
         scanLock.current = false;
@@ -95,6 +97,12 @@ const QRScannerPage = () => {
       scanner.clear().catch(() => {});
     };
   }, [isScanning, user, navigate]);
+  useEffect(() => {
+    if (shouldRedirect) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [shouldRedirect, navigate]);
+
   return (
     <div className="page">
       <div className="scanner-container">

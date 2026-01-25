@@ -293,6 +293,7 @@ export default function EcoApp() {
   const [itemToast, setItemToast] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
+  const [timerAnchor, setTimerAnchor] = useState(null);
 
   const { width, height } = useWindowSize();
   // -----------------------------
@@ -317,7 +318,7 @@ export default function EcoApp() {
           started_at: data.started_at,
         });
 
-        // ⏱ initialize timer ONCE when session appears
+        setTimerAnchor(Date.now()); // ✅ anchor starts NOW
         setTimeLeft(SESSION_DURATION_MS);
       } else {
         setSession(null);
@@ -344,35 +345,55 @@ export default function EcoApp() {
     return () => supabase.removeChannel(channel);
   }, [citizenId]);
   // -----------------------------
-  // SESSION COUNTDOWN (UI ONLY)
+  // SESSION COUNTDOWN (FINAL, FIXED)
   // -----------------------------
   useEffect(() => {
-    if (!session || timeLeft === null) return;
+    if (!session || !timerAnchor) {
+      setTimeLeft(null);
+      return;
+    }
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1000) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1000;
-      });
+    const interval = setInterval(async () => {
+      const elapsed = Date.now() - timerAnchor;
+      const remaining = SESSION_DURATION_MS - elapsed;
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+
+        await supabase
+          .from("bin_sessions")
+          .update({
+            status: "ended",
+            ended_at: new Date().toISOString(),
+          })
+          .eq("session_id", session.id);
+
+        setSession(null);
+        setTimerAnchor(null);
+        setTimeLeft(null);
+
+        setShowThankYou(true);
+        setTimeout(() => setShowThankYou(false), 5000);
+      } else {
+        setTimeLeft(remaining);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session, timeLeft]);
+  }, [session, timerAnchor]);
+
   // -----------------------------
-  // ITEM TOAST + TIMER RESET
+  // ITEM TOAST + TIMER RESET (FINAL)
   // -----------------------------
   useEffect(() => {
     if (treeLevel === null) return;
 
     if (lastTreeLevel !== null && treeLevel > lastTreeLevel && session) {
-      // ✅ Toast
       setItemToast(true);
       setTimeout(() => setItemToast(false), 2000);
 
-      // 🔥 RESET TIMER HERE (NO DB, NO LATENCY)
+      // 🔥 REAL reset
+      setTimerAnchor(Date.now());
       setTimeLeft(SESSION_DURATION_MS);
     }
 
