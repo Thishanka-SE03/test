@@ -4,14 +4,54 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { Map, Marker } from "pigeon-maps";
+import { RECYCLING_CENTERS } from "./constant/centers";
+import "./style/QrScanner.css";
 
 const QRScannerPage = () => {
   const scanLock = useRef(false);
   const [isScanning, setIsScanning] = useState(true);
+  const [scanResult, setScanResult] = useState(null);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  // Map states FIXED
+  const [activeCenter, setActiveCenter] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState([7.873, 80.772]);
+  const [mapZoom, setMapZoom] = useState(7);
+  const [isLocating, setIsLocating] = useState(false); // Added
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const BRIDGE_URL = import.meta.env.VITE_BRIDGE_URL;
+
+  const locateMe = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = [pos.coords.latitude, pos.coords.longitude];
+        setUserLocation(loc);
+        setMapCenter(loc);
+        setMapZoom(13);
+        setIsLocating(false);
+      },
+      (err) => {
+        console.error(err);
+        alert("Location denied. Select manually.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true },
+    );
+  };
+
+  // Auto-locate on mount FIXED
+  useEffect(() => {
+    locateMe();
+  }, []);
 
   useEffect(() => {
     if (!isScanning) return;
@@ -120,105 +160,75 @@ const QRScannerPage = () => {
 
   return (
     <div className="page">
-      <div className="scanner-container">
+      <div className="scannerContainer">
         <h2 className="title">QR Code Scanner</h2>
-        <p className="instruction">Point your camera at a QR code</p>
+        <p className="instruction">Point camera at Smart Bin QR</p>
 
-        {isScanning && <div id="qr-reader" className="qr-reader" />}
+        {isScanning && <div id="qr-reader" className="qrReader" />}
 
-        <style jsx>{`
-          .page {
-            height: 100vh;
-            overflow: scroll;
-            overflow-x: hidden;
-          }
+        {scanResult && (
+          <div className="result">
+            {scanResult.success ? (
+              <p>✅ Session started for Bin {scanResult.binId}</p>
+            ) : (
+              <p>{scanResult.error}</p>
+            )}
+            <button className="restartBtn" onClick={handleRestart}>
+              Scan Again
+            </button>
+          </div>
+        )}
 
-          .scanner-container {
-            padding: 24px;
-            font-family: "Segoe UI", Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-            background-color: #f8fff8;
-            min-height: 100vh;
-          }
+        {/* Map Section */}
+        <div className="mapSection">
+          <h3 className="mapTitle">EcoSphere Recycling Centers 🇱🇰</h3>
+          <p className="mapInstruction">
+            🔴 Centers | 🔵 You{isLocating && " (locating...)"}
+          </p>
 
-          .title {
-            color: #2e7d32;
-            font-size: 28px;
-            margin-bottom: 8px;
-            font-weight: 600;
-          }
+          <div className="mapContainer">
+            <Map
+              center={mapCenter}
+              zoom={mapZoom}
+              height={450}
+              width="100%"
+              metaWheelZoom={true}
+              onClick={({ latLng, event }) => {
+                setUserLocation(latLng);
+                setMapCenter(latLng);
+                setMapZoom(13);
+              }}
+            >
+              {/* Centers (RED) */}
+              {RECYCLING_CENTERS.map((center, i) => (
+                <Marker
+                  key={i}
+                  anchor={[center.lat, center.lng]}
+                  color="#e53935"
+                  width={24}
+                  onClick={() =>
+                    setActiveCenter(
+                      activeCenter?.name === center.name ? null : center,
+                    )
+                  }
+                />
+              ))}
 
-          .instruction {
-            color: #4caf50;
-            font-size: 16px;
-            margin-bottom: 24px;
-          }
+              {/* User (BLUE) */}
+              {userLocation && (
+                <Marker anchor={userLocation} color="#1e88e5" width={28} />
+              )}
+            </Map>
 
-          .qr-reader {
-            width: 100%;
-            border: 4px solid #4caf50;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.2);
-          }
-
-          .result-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px 24px;
-            margin-top: 32px;
-            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.15);
-            border: 2px solid #e8f5e9;
-          }
-
-          .success-title {
-            color: #2e7d32;
-            font-size: 24px;
-            margin-bottom: 20px;
-          }
-
-          .result {
-            background-color: #e8f5e9;
-            padding: 16px;
-            border-radius: 12px;
-            margin: 20px 0;
-            word-break: break-all;
-            font-size: 16px;
-            color: #1b5e20;
-          }
-
-          .result-link {
-            color: #4caf50;
-            text-decoration: underline;
-            font-weight: 500;
-          }
-
-          .scan-again-btn {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-            transition: all 0.3s ease;
-            margin-top: 16px;
-          }
-
-          .scan-again-btn:hover {
-            background-color: #388e3c;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-          }
-
-          .scan-again-btn:active {
-            transform: translateY(0);
-          }
-        `}</style>
+            <button
+              className="locateBtn"
+              onClick={locateMe}
+              disabled={isLocating}
+            >
+              {isLocating ? "Locating..." : "Locate Me"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

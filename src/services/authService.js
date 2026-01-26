@@ -32,7 +32,7 @@ export async function citizenLogin(email, password) {
 }
 export async function sendPasswordReset(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://test-q8me.vercel.app/reset-password",
+    redirectTo: "https://localhost:2000/reset-password",
   });
 
   if (error) {
