@@ -42,8 +42,27 @@ const QRScannerPage = () => {
 
         if (!binId) throw new Error("INVALID_QR");
 
-        // 🔍 Check if bin already has active session
-        const { data: existing, error: checkErr } = await supabase
+        // 🔴 1. CHECK BIN STATUS (FULL / AVAILABLE)
+        const { data: bin, error: binErr } = await supabase
+          .from("smartbin")
+          .select("status")
+          .eq("binid", binId)
+          .single();
+
+        if (binErr || !bin) {
+          throw new Error("BIN_NOT_FOUND");
+        }
+
+        if (bin.status === "full") {
+          alert(
+            "❌ Sorry, this Smart Bin is currently FULL. Please use another bin.",
+          );
+          scanLock.current = false;
+          return;
+        }
+
+        // 🔍 2. CHECK IF BIN ALREADY HAS ACTIVE SESSION
+        const { data: existing } = await supabase
           .from("bin_sessions")
           .select("session_id")
           .eq("bin_id", binId)
@@ -56,19 +75,16 @@ const QRScannerPage = () => {
           return;
         }
 
-        // 🚀 Start session (DB insert)
+        // 🚀 3. START SESSION
         const { error } = await supabase.from("bin_sessions").insert({
           bin_id: binId,
           citizen_id: user.id,
           status: "active",
         });
 
-        if (error) {
-          console.error(error);
-          throw new Error("SESSION_CREATE_FAILED");
-        }
+        if (error) throw error;
 
-        // Optional local marker (UI only)
+        // Optional local marker
         localStorage.setItem(
           "activeBinSession",
           JSON.stringify({
@@ -77,12 +93,11 @@ const QRScannerPage = () => {
             startedAt: Date.now(),
           }),
         );
-        // after successful DB insert
+
         await scanner.clear();
         setIsScanning(false);
         setShouldRedirect(true);
 
-        // Redirect to dashboard
         window.location.replace("/dashboard");
       } catch (err) {
         console.error(err);
