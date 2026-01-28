@@ -17,8 +17,18 @@ const { isWeb, isSmallDevice } = responsiveHelpers;
 const rewards = [
   { title: "THE PALMS", points: 100, off: "30%", category: "Loyalty" },
   { title: "Tranquilisle", points: 200, off: "20%", category: "Loyalty" },
-  { title: "Beauty & Wellness",points: 150,off: "15%",category: "Beauty & Wellness",},
-  { title: "Clothing & Accessories",points: 150,off: "15%",category: "Clothing",},
+  {
+    title: "Beauty & Wellness",
+    points: 150,
+    off: "15%",
+    category: "Beauty & Wellness",
+  },
+  {
+    title: "Clothing & Accessories",
+    points: 150,
+    off: "15%",
+    category: "Clothing",
+  },
   { title: "Dining", points: 100, off: "40%", category: "Dining" },
   { title: "Eco Store", points: 80, off: "10%", category: "Sustainability" },
   { title: "Green Cafe", points: 120, off: "12%", category: "Dining" },
@@ -57,7 +67,7 @@ const Redeem = () => {
           Alert.alert("Error", "Failed to load your points.");
           setCurrentPoints(0);
           setLoading(false);
-        }
+        },
       );
     };
 
@@ -135,9 +145,9 @@ const Redeem = () => {
       (err) => {
         Alert.alert(
           "Redemption Failed",
-          err.message || "Something went wrong. Please try again."
+          err.message || "Something went wrong. Please try again.",
         );
-      }
+      },
     );
   };
 
