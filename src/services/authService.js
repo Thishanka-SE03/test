@@ -46,11 +46,10 @@ export const signUpCitizen = async ({
   fullname,
 }) => {
   // 1️⃣ Create Supabase Auth user
-  const { data: authData, error: authError } =
-    await supabase.auth.signUp({
-      email,
-      password,
-    });
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+  });
 
   if (authError) throw authError;
 
@@ -80,3 +79,26 @@ export const signUpCitizen = async ({
   if (citizenError) throw citizenError;
   return authData.user;
 };
+
+export async function handleAuthCallback() {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("No authenticated user found");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("users")
+    .select("usertype")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError) {
+    throw new Error("User profile not found");
+  }
+
+  return profile.usertype;
+}
