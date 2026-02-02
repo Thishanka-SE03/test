@@ -12,7 +12,7 @@ const isDesktop = width >= 1024;
 const columns = isDesktop ? 4 : isTablet ? 3 : 2;
 
 export const cardWidth = isWeb
-  ? Math.min((width - 80) / columns - 20, 300)
+  ? Math.min((width - 20) / columns - 20, 300)
   : (width - 60) / 2;
 
 // Main styles object
@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: -20,
     borderRadius: 24,
-    padding: 24,
+    padding: 34,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
@@ -198,7 +198,7 @@ export const styles = StyleSheet.create({
   },
 
   rewardsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     marginTop: 30,
   },
 
@@ -221,16 +221,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
 
-  // ────────────────────────────────────────────────
-  // MODERNIZED REWARD CARD STYLES (updated below)
-  // ────────────────────────────────────────────────
-
   rewardCard: {
     backgroundColor: '#f8fffb',
     borderRadius: 24,
-    padding: 20,
+    padding: 5,
     width: cardWidth,
-    minHeight: 220,                       // consistent height for clean grid
+    Height: 300,                       // consistent height for clean grid
     borderWidth: 1.5,
     borderColor: '#a7f3d0',
     shadowColor: '#000',
@@ -248,7 +244,7 @@ export const styles = StyleSheet.create({
   },
 
   rewardCategoryBadge: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#166534',
     backgroundColor: '#dcfce7',
     paddingHorizontal: 10,
@@ -259,7 +255,7 @@ export const styles = StyleSheet.create({
   },
 
   discountText: {
-    fontSize: 15,
+    fontSize: 12,
     color: '#dc2626',
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -269,7 +265,7 @@ export const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: '#166534',
-    marginBottom: 16,
+    marginBottom: 3,
     minHeight: 50,
     textAlign: 'center',
     lineHeight: 22,
@@ -280,7 +276,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
-    paddingVertical: 14,
+    paddingVertical: 7,
     paddingHorizontal: 20,
     borderRadius: 20,
     borderWidth: 2,
