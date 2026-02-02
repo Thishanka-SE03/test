@@ -1,158 +1,78 @@
-<div align="center">
-  <img 
-    src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/main/Readme%20Asset/Icon.png" 
-    alt="EcoSphere Logo" 
-    width="180" 
-    style="border-radius: 20px; box-shadow: 0 8px 30px rgba(0,180,90,0.3);"
-  />
+<!--
+README - GPL-3.0 license
+-->
 
-  <h1>EcoSphere</h1>
-  <h3>🌍 AI-Powered Smart Waste Management & Reforestation Platform</h3>
+# EcoSphere Recycling
 
-  <p>
-    <a href="https://github.com/SE03-SAD-Group-Project/EcoSphere">
-      <img src="https://img.shields.io/badge/Status-Prototype-orange?style=flat-square&logo=git&logoColor=white" alt="Status" />
-    </a>
-    <img src="https://img.shields.io/badge/Year-2026-blue?style=flat-square" alt="Year" />
-    <img src="https://img.shields.io/badge/Tech-React%20%E2%80%A2%20Node.js%20%E2%80%A2%20IoT-success?style=flat-square" alt="Tech Stack" />
-  </p>
+♻️ **Sustainable Waste Management & Rewards App** for Android
 
-  <br/>
-</div>
+Eco-friendly recycling client that helps users sort, track, reward, and properly dispose of waste — turning everyday recycling into an engaging habit.
 
-## 🌿 What is EcoSphere?
+**Warning**  
+If your region has limited recycling infrastructure or collection services, some features (like nearby drop-off points or rewards) may require location services or partner integrations.
 
-**EcoSphere** is an **AI + IoT** platform that transforms waste management in developing countries by making collection smarter, recycling rewarding, and proper disposal directly fund **real tree planting**.
+## Table of Contents
 
-It solves real-world pain points:
+- [Features](#features)
+- [Download Now](#download-now)
+- [FAQ](#faq)
+- [Development Setup](#development-setup)
+- [Translations](#translations)
+- [Support Me](#support-me)
+- [Join our community](#join-our-community)
+- [Contributors](#contributors)
 
-- Overflowing bins & unpredictable collection
-- Low public recycling participation
-- Illegal dumping hotspots
-- Inefficient truck routes wasting fuel and increasing emissions
+## Features
 
-<br/>
+- Scan items or search for waste types to get instant recycling instructions
+- Find nearby recycling bins, collection points & drop-off centers (map integration)
+- Track your personal recycling stats: items recycled, CO₂ saved, plastic reduced
+- Earn **EcoPoints** or rewards for verified recycling actions
+- Reward redemption: eco-products, discounts, or donations to environmental causes
+- Waste sorting game & educational tips for beginners
+- Community challenges & leaderboards to compete with friends
+- Schedule pickups for bulk/recyclable waste (where supported)
+- Offline mode for saved instructions & personal stats
+- Dark / Light / Dynamic Material You theme
+- Live impact dashboard (your contribution visualized)
+- Import/export recycling history
+- Audio feedback & accessibility options
+- Sleep timer for educational audio guides
+- etc.
 
-## ✨ Core Features
+## Download Now
 
-<div align="center">
-<table>
-  <tr>
-    <th>👥 Citizen App</th>
-    <th>🚛 Collector Dashboard</th>
-  </tr>
-  <tr>
-    <td>
-      <ul>
-        <li>Scan QR on bins → earn <strong>Eco-Points</strong></li>
-        <li>Watch virtual tree grow → real tree planted</li>
-        <li>Report illegal dumping (photo + GPS)</li>
-        <li>AI chatbot for “what goes where” advice</li>
-        <li>On-demand pickup requests</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>AI-optimized daily routes</li>
-        <li>Live bin fill-level monitoring</li>
-        <li>One-tap collection confirmation</li>
-        <li>Lower fuel use & emissions</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <th>🏢 Municipal Portal</th>
-    <th>♻️ Recycling Partners</th>
-  </tr>
-  <tr>
-    <td>
-      <ul>
-        <li>City-wide interactive bin map</li>
-        <li>Illegal dumping heatmaps</li>
-        <li>Waste trend analytics & reports</li>
-        <li>Dynamic scheduling tools</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Real-time alerts for high-value recyclables</li>
-        <li>Validate & redeem Eco-Points</li>
-        <li>Clear transaction history</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-</div>
+Get the latest version from:
 
-### ⚙️ Admin Panel
-- System-wide monitoring & alerts
-- User/role management
-- Reward point economy tuning
-- Exportable analytics
+[<img src="https://img.shields.io/badge/Get%20it%20on-GitHub-black?style=for-the-badge&logo=github" alt="GitHub">](https://github.com/YOUR_USERNAME/ecosphere-recycling/releases)
+[<img src="https://img.shields.io/badge/Get%20it%20on-Google%20Play-00A859?style=for-the-badge&logo=google-play" alt="Google Play">](https://play.google.com/store/apps/details?id=lk.ecosphere.recycling)  
+[<img src="https://img.shields.io/badge/Get%20it%20on-IzzyOnDroid-blue?style=for-the-badge" alt="IzzyOnDroid">](https://apt.izzysoft.de/fdroid/index/apk/lk.ecosphere.recycling)
+[<img src="https://img.shields.io/badge/Get%20it%20on-Obtainium-purple?style=for-the-badge" alt="Obtainium">](https://github.com/ImranR98/Obtainium)
+[<img src="https://img.shields.io/badge/Get%20it%20on-OpenAPK-green?style=for-the-badge" alt="OpenAPK">](https://openapk.net/)
 
-<br/>
+(Replace links with your actual ones)
 
-## 🖼️ Screenshots
+## FAQ
 
-<div align="center">
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/1.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/2.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/3.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/4.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-</div>
+**Q: Why isn't EcoSphere showing my nearby collection points?**  
+A: Make sure location permission is granted. Some regions may have incomplete map data — help us improve by contributing points!
 
-<div align="center">
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/5.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/6.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/7.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-  <img src="https://github.com/SE03-SAD-Group-Project/EcoSphere/raw/9d26dbe7f0549cab4fa997e6793dad6bfc0347b6/Readme%20Asset/8.png" width="24%" style="border-radius:12px; margin:6px; box-shadow:0 8px 25px rgba(0,0,0,0.15)"/>
-</div>
+**Q: How do rewards work?**  
+A: Scan proof of recycling (photo / QR at station) → earn EcoPoints → redeem for partner perks or tree-planting donations.
 
-<br/>
+**Q: Is my data private?**  
+A: Yes — we only store what you explicitly share. No selling of personal data.
 
-## 🏗️ Tech Stack
+## Development Setup
 
-| Layer          | Technologies                          |
-|----------------|---------------------------------------|
-| **Frontend**   | React • JavaScript • Bootstrap        |
-| **Backend**    | JavaScript • Node                     |
-| **Database**   | PostgreSQL (Supabase)                 |
-| **IoT**        | ESP32 • Ultrasonic • IR               |
-| **AI**         | Route optimization • Fill-level prediction |
-| **Deployment** | Vercel • Supabase                     |
-| **Others**     | GitHub                                |
+### Prerequisites
 
-<br/>
+- Android Studio Hedgehog | 2023.1.1+
+- JDK 17+
+- Gradle 8.0+
 
-## 🌱 Reforestation Impact
+### Build Instructions
 
-Every correctly sorted waste batch → **Eco-Points** → **real trees planted**  
-Partnered with local NGOs  
-Live tree counter displayed in the app
-
-<br/>
-
-## 👥 Team
-
-- **Sanudinee Kuruppu** — Project Lead
-- **Sachira Tharushan**
-- **Thishanka Methshan Ranasinghe**
-
-**Supervisor:** Ms. Chabodi Padmaperuma  
-**Institution:** Lanka Nippon BizTech Institute (LNBTI) — 2026
-
-<br/>
-
-## 📄 Documentation & Assets
-
-- 📊 UML • EER • System Architecture diagrams
-- 📖 System Manual & User Guide
-- 🧪 Test Reports
-- 📈 Management & Progress Reports
-
-<br/>
-
-<div align="center">
-  <i>🌱 Turning everyday waste decisions into a greener planet — one bin, one point, one tree at a time.</i><br/><br/>
-  <sub>Made with ❤️ for a cleaner Sri Lanka</sub>
-</div>
+1. Clone the repo  
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/ecosphere-recycling.git
