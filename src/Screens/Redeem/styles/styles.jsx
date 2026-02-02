@@ -221,163 +221,179 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
 
+  // ────────────────────────────────────────────────
+  // MODERNIZED REWARD CARD STYLES (updated below)
+  // ────────────────────────────────────────────────
+
   rewardCard: {
     backgroundColor: '#f8fffb',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 24,
+    padding: 20,
     width: cardWidth,
-    borderWidth: 2,
+    minHeight: 220,                       // consistent height for clean grid
+    borderWidth: 1.5,
     borderColor: '#a7f3d0',
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+    elevation: 8,
   },
 
   rewardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 14,
   },
 
   rewardCategoryBadge: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#166534',
     backgroundColor: '#dcfce7',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     fontWeight: '700',
+    overflow: 'hidden',
   },
 
   discountText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#dc2626',
-    fontWeight: 'bold',
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
 
   rewardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '700',
     color: '#166534',
-    marginBottom: 12,
-    minHeight: 48,
+    marginBottom: 16,
+    minHeight: 50,
     textAlign: 'center',
+    lineHeight: 22,
   },
 
   pointsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'white',
-    paddingVertical: 12,
-    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: '#86efac',
+    shadowColor: '#16a34a',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
 
   pointsText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#166534',
     marginLeft: 8,
   },
 
   disabledCard: {
-    opacity: 0.5,
+    opacity: 0.65,
     borderColor: '#d1d5db',
+    borderWidth: 1.5,
   },
-  // Add these to your styles object in ./styles/styles.js
 
-modalOverlay: {
-  flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
+  // Modal styles (unchanged)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-modalContent: {
-  backgroundColor: '#ffffff',
-  width: '90%',
-  maxWidth: 420,
-  borderRadius: 24,
-  padding: 32,
-  alignItems: 'center',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.25,
-  shadowRadius: 20,
-  elevation: 20, // Android shadow
-},
+  modalContent: {
+    backgroundColor: '#ffffff',
+    width: '90%',
+    maxWidth: 420,
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 20,
+  },
 
-modalSuccessTitle: {
-  fontSize: 26,
-  fontWeight: 'bold',
-  color: '#166534', // Deep green
-  marginBottom: 16,
-  textAlign: 'center',
-},
+  modalSuccessTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
 
-modalSubtitle: {
-  fontSize: 17,
-  color: '#4b5563',
-  textAlign: 'center',
-  marginBottom: 24,
-},
+  modalSubtitle: {
+    fontSize: 17,
+    color: '#4b5563',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
 
-modalRewardTitle: {
-  fontSize: 20,
-  fontWeight: 'bold',
-  color: '#166534',
-  marginBottom: 28,
-  textAlign: 'center',
-},
+  modalRewardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginBottom: 28,
+    textAlign: 'center',
+  },
 
-modalCodeLabel: {
-  fontSize: 15,
-  color: '#6b7280',
-  marginBottom: 12,
-},
+  modalCodeLabel: {
+    fontSize: 15,
+    color: '#6b7280',
+    marginBottom: 12,
+  },
 
-codeContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#f0fdf4',
-  paddingHorizontal: 24,
-  paddingVertical: 18,
-  borderRadius: 16,
-  borderWidth: 2,
-  borderColor: '#86efac',
-  marginBottom: 16,
-},
+  codeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#86efac',
+    marginBottom: 16,
+  },
 
-codeText: {
-  fontSize: 28,
-  fontWeight: 'bold',
-  letterSpacing: 4,
-  color: '#166534',
-},
+  codeText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    letterSpacing: 4,
+    color: '#166534',
+  },
 
-copiedText: {
-  color: '#16a34a',
-  fontSize: 16,
-  fontWeight: '600',
-  marginBottom: 20,
-},
+  copiedText: {
+    color: '#16a34a',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
 
-doneButton: {
-  backgroundColor: '#16a34a',
-  paddingHorizontal: 40,
-  paddingVertical: 16,
-  borderRadius: 16,
-},
+  doneButton: {
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 40,
+    paddingVertical: 16,
+    borderRadius: 16,
+  },
 
-doneButtonText: {
-  color: '#ffffff',
-  fontWeight: 'bold',
-  fontSize: 18,
-},
+  doneButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
 });
 
 // Export responsive helpers for use in component

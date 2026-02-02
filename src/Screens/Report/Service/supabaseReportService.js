@@ -54,7 +54,7 @@ export const submitGarbageReport = async ({
         description: description.trim(),
         dateposted: today,
         imageurl: imageUrl,
-        status: 'Pending', // Initial status
+        status: 'pending', // Initial status
         datereport: today,
         citizenno: citizenno, // Must be a valid UUID from auth.users or your users table
         latitude: latitude ? parseFloat(latitude.toFixed(5)) : null,

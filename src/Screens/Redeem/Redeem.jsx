@@ -15,24 +15,20 @@ import { rewardsService } from "./Service/rewardsService";
 const { isWeb, isSmallDevice } = responsiveHelpers;
 
 const rewards = [
-  { title: "THE PALMS", points: 100, off: "30%", category: "Loyalty" },
-  { title: "Tranquilisle", points: 200, off: "20%", category: "Loyalty" },
-  {
-    title: "Beauty & Wellness",
-    points: 150,
-    off: "15%",
-    category: "Beauty & Wellness",
-  },
-  {
-    title: "Clothing & Accessories",
-    points: 150,
-    off: "15%",
-    category: "Clothing",
-  },
-  { title: "Dining", points: 100, off: "40%", category: "Dining" },
-  { title: "Eco Store", points: 80, off: "10%", category: "Sustainability" },
-  { title: "Green Cafe", points: 120, off: "12%", category: "Dining" },
-  { title: "Plant Shop", points: 90, off: "30%", category: "Gardening" },
+  { title: "Keells Supermarket", points: 120, off: "25%", category: "Grocery" },
+  { title: "Cargills Food City", points: 110, off: "20%", category: "Grocery" },
+  { title: "Abans Electronics", points: 250, off: "15%", category: "Electronics" },
+  { title: "Softlogic Retail", points: 180, off: "20%", category: "Shopping" },
+  { title: "Fashion Bug", points: 140, off: "18%", category: "Clothing" },
+  { title: "Baskin-Robbins", points: 100, off: "25%", category: "Desserts" },
+  { title: "Popeyes / KFC", points: 130, off: "30%", category: "Dining" },
+  { title: "Spa & Salon", points: 160, off: "20%", category: "Beauty & Wellness" },
+  { title: "Fitness First", points: 200, off: "15%", category: "Fitness" },
+  { title: "Cinema Voucher", points: 90, off: "Free Ticket", category: "Entertainment" },
+  { title: "Organic Shop", points: 100, off: "15%", category: "Sustainability" },
+  { title: "Book Shop", points: 80, off: "20%", category: "Books & Stationery" },
+  { title: "Home Decor", points: 170, off: "12%", category: "Home & Living" },
+  { title: "Coffee House", points: 95, off: "25%", category: "Dining" },
 ];
 
 const tiers = [
