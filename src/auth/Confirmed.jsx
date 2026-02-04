@@ -68,14 +68,6 @@ const EmailConfirmed = () => {
               Please log back into the <b>EcoSphere app</b> to continue.
             </p>
           </div>
-
-          <a
-            href="/login"
-            className={styles.btnPrimary}
-            style={{ textAlign: "center" }}
-          >
-            Go to Login
-          </a>
         </div>
       </section>
     </main>
