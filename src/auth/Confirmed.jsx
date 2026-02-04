@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
-import styles from "./ResetPassword.module.css";
+import styles from "../Components/ResetPassword.module.css";
 import logo from "../assets/images/logo.png";
 
 // Background images (reuse)
-import bg1 from "./Images/Caro1.jpg";
-import bg2 from "./Images/Caro2.jpg";
-import bg3 from "./Images/Caro3.jpg";
-import bg4 from "./Images/Caro4.jpg";
-import bg5 from "./Images/Caro5.jpg";
+import bg1 from "../Components/Images/Caro1.jpg";
+import bg2 from "../Components/Images/Caro2.jpg";
+import bg3 from "../Components/Images/Caro3.jpg";
+import bg4 from "../Components/Images/Caro4.jpg";
+import bg5 from "../Components/Images/Caro5.jpg";
 
 const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
 
