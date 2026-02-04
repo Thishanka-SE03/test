@@ -49,6 +49,9 @@ export const signUpCitizen = async ({
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: "https://test-q8me.vercel.app/confirm-email",
+    },
   });
 
   if (authError) throw authError;

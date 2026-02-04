@@ -8,6 +8,7 @@ import TinyChat from "./Components/TinyChat";
 import "./App.css";
 import { useEffect } from "react";
 import ResetPassword from "./Components/ResetPassword";
+import ConfirmEmail from "./auth/Confirmed";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/confirm-email" element={<ConfirmEmail />} />
           <Route path="/callback" element={<Callback />} />
           <Route
             path="/dashboard"
